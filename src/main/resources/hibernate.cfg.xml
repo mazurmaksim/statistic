@@ -19,6 +19,6 @@
         <!-- Опціонально: Логування SQL-запитів -->
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
-        <mapping class="org.statistic.eggs.entity.Counter"/>
+        <mapping class="org.statistic.eggs.core.entity.Counter"/>
     </session-factory>
 </hibernate-configuration>

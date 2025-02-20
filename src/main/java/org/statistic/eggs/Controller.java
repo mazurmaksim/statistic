@@ -8,7 +8,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import org.statistic.eggs.entity.Counter;
+import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.persistence.Persistence;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

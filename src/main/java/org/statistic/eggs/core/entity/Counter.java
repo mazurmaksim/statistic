@@ -1,4 +1,4 @@
-package org.statistic.eggs.entity;
+package org.statistic.eggs.core.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;

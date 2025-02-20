@@ -9,8 +9,8 @@ module org.example.demo {
 
     requires java.sql;
     requires org.hibernate.orm.core;
-    opens org.statistic.eggs.entity to org.hibernate.orm.core;
-    exports org.statistic.eggs.entity;
+    opens org.statistic.eggs.core.entity to org.hibernate.orm.core;
+    exports org.statistic.eggs.core.entity;
     opens org.statistic.eggs to javafx.fxml;
     exports org.statistic.eggs;
 }
