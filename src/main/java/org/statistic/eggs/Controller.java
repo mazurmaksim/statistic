@@ -67,15 +67,22 @@ public class Controller {
                 result.sort(Comparator.comparing(Counter::getDateTime));
 
                 StringBuilder history = new StringBuilder();
-                Integer monthAmount = getMonthAmount(result);
+                Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
+
+                if (statisticView == StatisticView.MONTHLY) {
+                    monthStatistic.forEach((month, amount) -> {
+                        series.getData().add(new XYChart.Data<>(month.name(), amount));
+                    });
+                }
+
                 result.forEach(counter -> {
                     if (statisticView == StatisticView.DAILY) {
-                        series.getData().add(new XYChart.Data<>(counter.getDateTime().getDayOfWeek().toString(), counter.getAmount()));
-                    } else if(statisticView == StatisticView.MONTHLY) {
-                        series.getData().add(new XYChart.Data<>(counter.getDateTime().getMonth().toString(), monthAmount));
+                        series.getData().add(new XYChart.Data<>(counter.getDateTime().getDayOfWeek() + "("
+                                + counter.getDateTime().getMonth().name() + ")"
+                                , counter.getAmount()));
                     }
-
                 });
+
                 barChart.getData().add(series);
                 if (!result.isEmpty() && result.size() >= 3) {
                     for (int i = 0; i < 3; i++) {
@@ -84,7 +91,7 @@ public class Controller {
                     prevResults.setText(history + System.lineSeparator() + " Total amount from date " +
                             previous.get(0).getDateTime() + " is - " +
                             calculateTotalSum(previous));
-                } else if(result.size() == 1) {
+                } else if (result.size() == 1) {
                     populate(history, result, 0);
                     prevResults.setText(history.toString());
                     prevResults.setText(" Total amount from " + previous.get(0).getDateTime() + ": " +
@@ -102,23 +109,8 @@ public class Controller {
         }
     }
 
-    private static Integer getMonthAmount(List<Counter> counter) {
-        LocalDate currentDate = LocalDate.now();
-        Integer result = 0;
-        for (Counter c : counter) {
-            if(c.getDateTime().getMonth() == currentDate.getMonth()) {
-                result += c.getAmount();
-            }
-        }
-        return result;
-    }
-
     private static List<Counter> unitedAmountByDay(List<Counter> previous) {
-        Map<LocalDate, Integer> withoutDateDuplicates = new HashMap<>();
-
-        for (Counter counter : previous) {
-            withoutDateDuplicates.put(counter.getDateTime(), withoutDateDuplicates.getOrDefault(counter.getDateTime(), 0) + counter.getAmount());
-        }
+        Map<LocalDate, Integer> withoutDateDuplicates = calculateSameDateAmount(previous);
 
         List<Counter> result = new ArrayList<>();
         withoutDateDuplicates.forEach((localDate, integer) -> {
@@ -128,6 +120,22 @@ public class Controller {
             result.add(counter);
         });
         return result;
+    }
+
+    private static Map<LocalDate, Integer> calculateSameDateAmount(List<Counter> previous) {
+        Map<LocalDate, Integer> withoutDateDuplicates = new HashMap<>();
+        for (Counter counter : previous) {
+            withoutDateDuplicates.put(counter.getDateTime(), withoutDateDuplicates.getOrDefault(counter.getDateTime(), 0) + counter.getAmount());
+        }
+        return withoutDateDuplicates;
+    }
+
+    private static Map<Month, Integer> calculateAmountByMonth(List<Counter> previous) {
+        Map<Month, Integer> amountByMonth = new HashMap<>();
+        for (Counter counter : previous) {
+            amountByMonth.put(counter.getDateTime().getMonth(), amountByMonth.getOrDefault(counter.getDateTime().getMonth(), 0) + counter.getAmount());
+        }
+        return amountByMonth;
     }
 
     private static void populate(StringBuilder history, List<Counter> previous, int i) {

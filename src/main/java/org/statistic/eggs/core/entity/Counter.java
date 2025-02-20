@@ -13,10 +13,7 @@ import java.util.UUID;
 public class Counter {
 
     private UUID id;
-
     private LocalDate dateTime;
-
-
     private Integer amount;
 
     @Id
@@ -29,6 +26,7 @@ public class Counter {
     public void setId(UUID id) {
         this.id = id;
     }
+
     @Column(name = "saved_at")
     public LocalDate getDateTime() {
         return dateTime;
@@ -37,6 +35,7 @@ public class Counter {
     public void setDateTime(LocalDate dateTime) {
         this.dateTime = dateTime;
     }
+
     @Column(name = "amount")
     public Integer getAmount() {
         return amount;
