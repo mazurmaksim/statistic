@@ -10,7 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "day_statistic")
 @Access(AccessType.PROPERTY)
-public class Counter {
+public class Counter implements Comparable<Counter> {
 
     private UUID id;
     private LocalDate dateTime;
@@ -55,5 +55,10 @@ public class Counter {
     @Override
     public int hashCode() {
         return Objects.hash(id, dateTime, amount);
+    }
+
+    @Override
+    public int compareTo(Counter other) {
+        return this.dateTime.compareTo(other.dateTime);
     }
 }

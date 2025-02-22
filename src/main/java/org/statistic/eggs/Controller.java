@@ -1,5 +1,7 @@
 package org.statistic.eggs;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -7,6 +9,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.persistence.Persistence;
@@ -42,7 +45,13 @@ public class Controller {
     private Button toggleStatsButton;
 
     @FXML
+    private ListView<String> listView;
+
+    private final ObservableList<String> items = FXCollections.observableArrayList();
+
+    @FXML
     private void initialize() {
+        listView.setItems(items);
         showStatistic(StatisticView.DAILY);
     }
 
@@ -66,7 +75,6 @@ public class Controller {
 
                 result.sort(Comparator.comparing(Counter::getDateTime));
 
-                StringBuilder history = new StringBuilder();
                 Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
 
                 if (statisticView == StatisticView.MONTHLY) {
@@ -77,25 +85,20 @@ public class Controller {
 
                 result.forEach(counter -> {
                     if (statisticView == StatisticView.DAILY) {
-                        series.getData().add(new XYChart.Data<>(counter.getDateTime().getDayOfWeek() + "("
-                                + counter.getDateTime().getMonth().name() + ")"
+                        series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
+                                + MonthView.getName(counter.getDateTime().getMonth().name()) + ")"
                                 , counter.getAmount()));
                     }
                 });
-
                 barChart.getData().add(series);
-                if (!result.isEmpty() && result.size() >= 3) {
-                    for (int i = 0; i < 3; i++) {
-                        populate(history, result, i);
+                result.sort(Collections.reverseOrder());
+                items.clear();
+                for (Counter h : result) {
+                    String day = DaysView.getName(h.getDateTime().getDayOfWeek().name());
+                    if(day!=null && day.equals(DaysView.getName(LocalDate.now().getDayOfWeek().name()))) {
+                        day = DaysView.getName("TODAY");
                     }
-                    prevResults.setText(history + System.lineSeparator() + " Total amount from date " +
-                            previous.get(0).getDateTime() + " is - " +
-                            calculateTotalSum(previous));
-                } else if (result.size() == 1) {
-                    populate(history, result, 0);
-                    prevResults.setText(history.toString());
-                    prevResults.setText(" Total amount from " + previous.get(0).getDateTime() + ": " +
-                            calculateTotalSum(previous));
+                    items.add(day + ": " + h.getAmount() + " eggs");
                 }
             } catch (Exception e) {
                 System.err.println("Transaction failed: " + e.getMessage());
@@ -136,36 +139,6 @@ public class Controller {
             amountByMonth.put(counter.getDateTime().getMonth(), amountByMonth.getOrDefault(counter.getDateTime().getMonth(), 0) + counter.getAmount());
         }
         return amountByMonth;
-    }
-
-    private static void populate(StringBuilder history, List<Counter> previous, int i) {
-        i = previous.size() - i - 1;
-        history.append(
-                        previous.get(i)
-                                .getDateTime()
-                                .getDayOfWeek().equals(LocalDateTime.now().getDayOfWeek()) ? "Today " : previous.get(i)
-                                .getDateTime()
-                                .getDayOfWeek())
-                .append(" ")
-                .append(previous.get(i)
-                        .getDateTime()
-                        .getDayOfMonth())
-                .append(".")
-                .append(previous.get(i)
-                        .getDateTime().getMonth().getValue())
-                .append(", ")
-                .append(" Amount: ")
-                .append(previous.get(i)
-                        .getAmount())
-                .append(System.lineSeparator());
-    }
-
-    private static Integer calculateTotalSum(List<Counter> list) {
-        Integer result = 0;
-        for (Counter ctr : list) {
-            result += ctr.getAmount();
-        }
-        return result;
     }
 
     @FXML
