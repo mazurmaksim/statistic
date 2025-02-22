@@ -32,9 +32,6 @@ import java.util.Map;
 
 public class Controller {
     @FXML
-    private Label result;
-
-    @FXML
     private Label prevResults;
 
     @FXML
@@ -74,7 +71,7 @@ public class Controller {
 
     private void populateOptions() {
         choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
-        choiceBox.setValue("– Select View to Show –");
+        choiceBox.setValue("– Select Statistic View –");
         choiceBox.setOnAction(event -> {
             if ("Monthly Statistic".equals(choiceBox.getValue())) {
                 showStatistic(StatisticView.MONTHLY);
@@ -110,11 +107,7 @@ public class Controller {
 
         ObservableList<Counter> data = FXCollections.observableArrayList();
         result.sort(Collections.reverseOrder());
-        result.forEach(counter -> {
-            if (statisticView == StatisticView.DAILY) {
-                data.add(counter);
-            }
-        });
+        data.addAll(result);
         tableView.setItems(data);
         barChart.getData().add(series);
     }
@@ -155,7 +148,6 @@ public class Controller {
         counter.setDateTime(LocalDate.now());
         Persistence<Counter> saver = new Persistence<>();
         saver.persist(counter);
-        result.setText("Today saved value: " + inputField.getText());
         showStatistic(StatisticView.DAILY);
     }
 }

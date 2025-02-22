@@ -9,13 +9,17 @@
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-    <Label fx:id="result" />
-    <TableView fx:id="tableView" prefHeight="200.0" prefWidth="400.0">
-        <columns>
-            <TableColumn fx:id="dayColumn" text="Day" prefWidth="200.0"/>
-            <TableColumn fx:id="amountColumn" text="Amount" prefWidth="200.0"/>
-        </columns>
-    </TableView>
+    <TitledPane text="Daily Statistics">
+        <content>
+            <TableView fx:id="tableView" prefHeight="200.0" prefWidth="400.0">
+                <columns>
+                    <TableColumn fx:id="dayColumn" text="Day" prefWidth="200.0"/>
+                    <TableColumn fx:id="amountColumn" text="Amount of Eggs" prefWidth="200.0"/>
+                </columns>
+            </TableView>
+        </content>
+    </TitledPane>
+
     <Label fx:id="prevResults" />
     <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
     <BarChart fx:id="barChart" animated="true" legendVisible="true" title="Laid Eggs Data">
