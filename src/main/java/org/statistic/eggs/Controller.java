@@ -4,24 +4,31 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
+import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.MonthView;
 import org.statistic.eggs.core.views.StatisticView;
-import org.statistic.eggs.core.persistence.Persistence;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Controller {
     @FXML
@@ -45,12 +52,27 @@ public class Controller {
     @FXML
     private ListView<String> listView;
 
-    private final ObservableList<String> items = FXCollections.observableArrayList();
+    @FXML
+    private TableView<Counter> tableView;
+    @FXML
+    private TableColumn<Counter, String> dayColumn;
+    @FXML
+    private TableColumn<Counter, Integer> amountColumn;
 
     @FXML
     private void initialize() {
-        listView.setItems(items);
         showStatistic(StatisticView.DAILY);
+        populateOptions();
+        populateStatisticTable();
+    }
+
+    private void populateStatisticTable() {
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        dayColumn.setCellValueFactory(new PropertyValueFactory<>("dateTime"));
+        amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+    }
+
+    private void populateOptions() {
         choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
         choiceBox.setValue("– Select View to Show –");
         choiceBox.setOnAction(event -> {
@@ -86,16 +108,15 @@ public class Controller {
             }
         });
 
-        barChart.getData().add(series);
+        ObservableList<Counter> data = FXCollections.observableArrayList();
         result.sort(Collections.reverseOrder());
-        items.clear();
-        for (Counter h : result) {
-            String day = DaysView.getName(h.getDateTime().getDayOfWeek().name());
-            if (day != null && day.equals(DaysView.getName(LocalDate.now().getDayOfWeek().name()))) {
-                day = DaysView.getName("TODAY");
+        result.forEach(counter -> {
+            if (statisticView == StatisticView.DAILY) {
+                data.add(counter);
             }
-            items.add(day + ": " + h.getAmount() + " eggs");
-        }
+        });
+        tableView.setItems(data);
+        barChart.getData().add(series);
     }
 
     private static List<Counter> unitedAmountByDay(List<Counter> previous) {

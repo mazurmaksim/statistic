@@ -7,7 +7,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.statistic.eggs.core.entity.Counter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StatisticDao {
 
