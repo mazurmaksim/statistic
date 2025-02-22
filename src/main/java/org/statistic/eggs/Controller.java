@@ -149,5 +149,6 @@ public class Controller {
         Persistence<Counter> saver = new Persistence<>();
         saver.persist(counter);
         showStatistic(StatisticView.DAILY);
+        inputField.clear();
     }
 }

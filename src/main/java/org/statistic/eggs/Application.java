@@ -14,6 +14,7 @@ public class Application extends javafx.application.Application {
         stage.setTitle("Statistic");
         stage.setScene(scene);
         stage.show();
+        stage.setResizable(false);
     }
 
     public static void main(String[] args) {
