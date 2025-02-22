@@ -12,7 +12,7 @@
     <Label fx:id="result" />
     <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" />
     <Label fx:id="prevResults" />
-   <ChoiceBox prefWidth="150.0" />
+    <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
     <BarChart fx:id="barChart" animated="true" legendVisible="true" title="Laid Eggs Data">
         <xAxis>
             <CategoryAxis fx:id="xAxis" />

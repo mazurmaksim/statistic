@@ -7,10 +7,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.views.DaysView;
@@ -40,10 +37,7 @@ public class Controller {
     private BarChart<String, Number> barChart;
 
     @FXML
-    private CategoryAxis xAxis;
-
-    @FXML
-    private NumberAxis yAxis;
+    private ChoiceBox<String> choiceBox;
 
     @FXML
     private Button toggleStatsButton;
@@ -57,6 +51,16 @@ public class Controller {
     private void initialize() {
         listView.setItems(items);
         showStatistic(StatisticView.DAILY);
+        choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
+        choiceBox.setValue("– Select View to Show –");
+        choiceBox.setOnAction(event -> {
+            if ("Monthly Statistic".equals(choiceBox.getValue())) {
+                showStatistic(StatisticView.MONTHLY);
+            }
+            if ("Days Statistic".equals(choiceBox.getValue())) {
+                showStatistic(StatisticView.DAILY);
+            }
+        });
     }
 
     private void showStatistic(StatisticView statisticView) {
@@ -81,6 +85,7 @@ public class Controller {
                         , counter.getAmount()));
             }
         });
+
         barChart.getData().add(series);
         result.sort(Collections.reverseOrder());
         items.clear();
@@ -131,15 +136,5 @@ public class Controller {
         saver.persist(counter);
         result.setText("Today saved value: " + inputField.getText());
         showStatistic(StatisticView.DAILY);
-    }
-
-    public void onViewMonthlyStatsClick() {
-        showStatistic(StatisticView.MONTHLY);
-        toggleStatsButton.setText("View Mothly Stats");
-    }
-
-    public void onViewDailyStatsClick() {
-        showStatistic(StatisticView.DAILY);
-        toggleStatsButton.setText("View Daily Stats");
     }
 }
