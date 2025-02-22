@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Controller {
+
+    // TODO: Implement manual add
+    @FXML
+    public TextField addManually;
     @FXML
     private Label prevResults;
 

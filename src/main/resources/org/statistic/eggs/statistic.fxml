@@ -33,6 +33,13 @@
         <Button onAction="#onSaveButtonClick" text="Save" />
     </HBox>
     </TitledPane>
+    <TitledPane text="Add eggs manually">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <TextField fx:id="addManually" maxWidth="35" />
+            <DatePicker/>
+            <Button onAction="#onSaveButtonClick" text="Save" />
+        </HBox>
+    </TitledPane>
     <Label fx:id="prevResults" />
     <HBox alignment="CENTER_LEFT" spacing="10">
     <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
