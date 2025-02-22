@@ -1,11 +1,12 @@
-package org.statistic.eggs;
+package org.statistic.eggs.core.views;
 
-public enum DaysView {
-    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, TODAY;
+public enum MonthView {
+    JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE,
+    JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
 
     public static String getName(String value) {
         try {
-            return capitalize(DaysView.valueOf(value.toUpperCase()).name());
+            return capitalize(MonthView.valueOf(value.toUpperCase()).name());
         } catch (IllegalArgumentException | NullPointerException e) {
             return null;
         }
@@ -15,3 +16,4 @@ public enum DaysView {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 }
+

@@ -13,4 +13,6 @@ module org.example.demo {
     exports org.statistic.eggs.core.entity;
     opens org.statistic.eggs to javafx.fxml;
     exports org.statistic.eggs;
+    exports org.statistic.eggs.core.views;
+    opens org.statistic.eggs.core.views to javafx.fxml;
 }

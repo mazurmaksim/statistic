@@ -11,8 +11,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
-import org.statistic.eggs.persistence.Persistence;
+import org.statistic.eggs.core.views.DaysView;
+import org.statistic.eggs.core.views.MonthView;
+import org.statistic.eggs.core.views.StatisticView;
+import org.statistic.eggs.core.persistence.Persistence;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -56,59 +60,36 @@ public class Controller {
     }
 
     private void showStatistic(StatisticView statisticView) {
-        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .configure("hibernate.cfg.xml")
-                .build();
         barChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
+        List<Counter> previous = StatisticDao.getAllData();
+        List<Counter> result = unitedAmountByDay(previous);
+        result.sort(Comparator.comparing(Counter::getDateTime));
+        Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
 
-        try (SessionFactory sessionFactory = new MetadataSources(registry)
-                .buildMetadata()
-                .buildSessionFactory()) {
+        if (statisticView == StatisticView.MONTHLY) {
+            monthStatistic.forEach((month, amount) -> {
+                series.getData().add(new XYChart.Data<>(month.name(), amount));
+            });
+        }
 
-            try (Session session = sessionFactory.openSession()) {
-                session.beginTransaction();
-                List<Counter> previous = new ArrayList<Counter>(session.createQuery(" from Counter c ").list().stream().toList());
-
-                List<Counter> result = unitedAmountByDay(previous);
-
-                result.sort(Comparator.comparing(Counter::getDateTime));
-
-                Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
-
-                if (statisticView == StatisticView.MONTHLY) {
-                    monthStatistic.forEach((month, amount) -> {
-                        series.getData().add(new XYChart.Data<>(month.name(), amount));
-                    });
-                }
-
-                result.forEach(counter -> {
-                    if (statisticView == StatisticView.DAILY) {
-                        series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
-                                + MonthView.getName(counter.getDateTime().getMonth().name()) + ")"
-                                , counter.getAmount()));
-                    }
-                });
-                barChart.getData().add(series);
-                result.sort(Collections.reverseOrder());
-                items.clear();
-                for (Counter h : result) {
-                    String day = DaysView.getName(h.getDateTime().getDayOfWeek().name());
-                    if(day!=null && day.equals(DaysView.getName(LocalDate.now().getDayOfWeek().name()))) {
-                        day = DaysView.getName("TODAY");
-                    }
-                    items.add(day + ": " + h.getAmount() + " eggs");
-                }
-            } catch (Exception e) {
-                System.err.println("Transaction failed: " + e.getMessage());
-                e.printStackTrace();
+        result.forEach(counter -> {
+            if (statisticView == StatisticView.DAILY) {
+                series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
+                        + MonthView.getName(counter.getDateTime().getMonth().name()) + ")"
+                        , counter.getAmount()));
             }
-        } catch (Exception e) {
-            System.err.println("SessionFactory creation failed: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            StandardServiceRegistryBuilder.destroy(registry);
+        });
+        barChart.getData().add(series);
+        result.sort(Collections.reverseOrder());
+        items.clear();
+        for (Counter h : result) {
+            String day = DaysView.getName(h.getDateTime().getDayOfWeek().name());
+            if (day != null && day.equals(DaysView.getName(LocalDate.now().getDayOfWeek().name()))) {
+                day = DaysView.getName("TODAY");
+            }
+            items.add(day + ": " + h.getAmount() + " eggs");
         }
     }
 
@@ -153,9 +134,9 @@ public class Controller {
     }
 
     public void onViewMonthlyStatsClick() {
-            showStatistic(StatisticView.MONTHLY);
-            toggleStatsButton.setText("View Mothly Stats");
-        }
+        showStatistic(StatisticView.MONTHLY);
+        toggleStatsButton.setText("View Mothly Stats");
+    }
 
     public void onViewDailyStatsClick() {
         showStatistic(StatisticView.DAILY);
