@@ -5,8 +5,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
@@ -23,6 +25,7 @@ import org.statistic.eggs.core.views.StatisticView;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +38,7 @@ public class Controller {
     // TODO: Implement manual add
     @FXML
     public TextField addManually;
+
     @FXML
     private Label prevResults;
 
@@ -55,10 +59,16 @@ public class Controller {
 
     @FXML
     private TableView<Counter> tableView;
+
     @FXML
     private TableColumn<Counter, String> dayColumn;
+
     @FXML
     private TableColumn<Counter, Integer> amountColumn;
+
+    @FXML
+    private DatePicker datePicker;
+
 
     @FXML
     private void initialize() {
@@ -154,5 +164,39 @@ public class Controller {
         saver.persist(counter);
         showStatistic(StatisticView.DAILY);
         inputField.clear();
+    }
+
+    @FXML
+    private void onManualSaveButtonClick() {
+        try {
+            int amount = Integer.parseInt(addManually.getText());
+            LocalDate date = datePicker.getValue();
+
+            if (date == null) {
+                showError("Please select a date.");
+                return;
+            }
+
+            Counter entry = new Counter();
+            entry.setAmount(amount);
+            entry.setDateTime(date);
+
+            Persistence<Counter> saver = new Persistence<>();
+            saver.persist(entry);
+
+            addManually.clear();
+            datePicker.setValue(null);
+            initialize();
+        } catch (NumberFormatException e) {
+            showError("Please enter a valid number of eggs.");
+        }
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Input Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

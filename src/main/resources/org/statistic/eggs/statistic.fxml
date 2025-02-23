@@ -36,8 +36,8 @@
     <TitledPane text="Add eggs manually">
         <HBox alignment="CENTER_LEFT" spacing="10">
             <TextField fx:id="addManually" maxWidth="35" />
-            <DatePicker/>
-            <Button onAction="#onSaveButtonClick" text="Save" />
+            <DatePicker fx:id="datePicker"/>
+            <Button onAction="#onManualSaveButtonClick" text="Save" />
         </HBox>
     </TitledPane>
     <Label fx:id="prevResults" />
