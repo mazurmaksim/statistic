@@ -184,6 +184,9 @@ public class Controller {
                     + System.lineSeparator() +
                             "If You want update use update button");
                     return;
+                } if(counter.getDateTime().isBefore(LocalDate.now())) {
+                    showError("Impossible add value to the next day: " + date);
+                    return;
                 }
             }
 
