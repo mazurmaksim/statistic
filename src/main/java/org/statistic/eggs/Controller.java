@@ -215,21 +215,15 @@ public class Controller {
         }
         try {
             int newAmount = Integer.parseInt(addManually.getText());
-            LocalDate newDate = datePicker.getValue();
-
-            if (newDate == null) {
-                showError("Please select a date.");
-                return;
-            }
 
             selectedEntry.setAmount(newAmount);
-            selectedEntry.setDateTime(newDate);
+            selectedEntry.setDateTime(selectedEntry.getDateTime());
 
             tableView.refresh();
 
             addManually.clear();
             datePicker.setValue(null);
-            StatisticDao.deleteByDate(newDate);
+            StatisticDao.deleteByDate(selectedEntry.getDateTime());
             if(newAmount > 0) {
                 Persistence<Counter> saver = new Persistence<>();
                 saver.persist(selectedEntry);
