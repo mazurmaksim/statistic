@@ -2,9 +2,7 @@ package org.statistic.eggs;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
@@ -23,13 +21,11 @@ import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
-import org.statistic.eggs.core.views.MonthView;
 import org.statistic.eggs.core.views.StatisticView;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -178,20 +174,22 @@ public class Controller {
             int amount = Integer.parseInt(addManually.getText());
             LocalDate date = datePicker.getValue();
 
+            if (date == null) {
+                showError("Please select a date.");
+                return;
+            }
+
             for (Counter counter : allData) {
                 if (date.equals(counter.getDateTime())) {
                     showError("You trying  insert already existing record for date: " + date
                     + System.lineSeparator() +
                             "If You want update use update button");
                     return;
-                } if(counter.getDateTime().isBefore(LocalDate.now())) {
-                    showError("Impossible add value to the next day: " + date);
-                    return;
                 }
             }
 
-            if (date == null) {
-                showError("Please select a date.");
+            if (date.isAfter(LocalDate.now())) {
+                showError("Impossible to add value to a past day: " + date);
                 return;
             }
 
@@ -207,6 +205,8 @@ public class Controller {
             initialize();
         } catch (NumberFormatException e) {
             showError("Please enter a valid number of eggs.");
+        } catch (Exception ex) {
+            showError(ex.getMessage());
         }
     }
 
@@ -230,7 +230,8 @@ public class Controller {
             addManually.clear();
             datePicker.setValue(null);
             if(newAmount > 0) {
-                selectedEntry.setAmount(newAmount);
+                int amount = newAmount + selectedEntry.getAmount();
+                selectedEntry.setAmount(amount);
                 selectedEntry.setDateTime(selectedEntry.getDateTime());
                 tableView.refresh();
                 StatisticDao.update(selectedEntry);
