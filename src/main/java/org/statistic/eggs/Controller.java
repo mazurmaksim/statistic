@@ -16,6 +16,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
@@ -120,7 +121,7 @@ public class Controller {
         result.forEach(counter -> {
             if (statisticView == StatisticView.DAILY) {
                 series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
-                        + MonthView.getName(counter.getDateTime().getMonth().name()) + ")"
+                        + counter.getDateTime() + ")"
                         , counter.getAmount()));
             }
         });
@@ -130,6 +131,12 @@ public class Controller {
         data.addAll(result);
         tableView.setItems(data);
         lineChart.getData().add(series);
+
+        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+            Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
+            Tooltip.install(toolTipData.getNode(), tooltip);
+            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+        }
     }
 
     private static List<Counter> unitedAmountByDay(List<Counter> previous) {
@@ -175,8 +182,19 @@ public class Controller {
     @FXML
     private void onManualSaveButtonClick() {
         try {
+            List<Counter> allData = new ArrayList<>(tableView.getItems());
+
             int amount = Integer.parseInt(addManually.getText());
             LocalDate date = datePicker.getValue();
+
+            for (Counter counter : allData) {
+                if (date.equals(counter.getDateTime())) {
+                    showError("You trying  insert already existing record for date: " + date
+                    + System.lineSeparator() +
+                            "If You want update use update button");
+                    return;
+                }
+            }
 
             if (date == null) {
                 showError("Please select a date.");
