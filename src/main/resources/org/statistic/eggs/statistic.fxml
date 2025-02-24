@@ -3,52 +3,85 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <VBox prefHeight="600" prefWidth="800" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.statistic.eggs.Controller">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="20.0" left="5.0" right="5.0"/>
     </padding>
-
-    <TitledPane text="Daily Statistics">
-        <content>
-            <TableView fx:id="tableView" prefHeight="250.0" prefWidth="400.0">
-                <columns>
-                    <TableColumn fx:id="dayColumn" text="Date" prefWidth="200">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="date" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="amountColumn" text="Amount of Eggs" prefWidth="200">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="amount" />
-                        </cellValueFactory>
-                    </TableColumn>
-                </columns>
-            </TableView>
-        </content>
-    </TitledPane>
-    <TitledPane text="Add eggs manually">
-        <HBox spacing="10" alignment="BASELINE_LEFT">
-            <TextField fx:id="addManually" promptText="Enter amount" maxWidth="80"/>
-            <DatePicker fx:id="datePicker"/>
-            <Button text="Add" onAction="#onManualSaveButtonClick" />
-            <Button text="Update" onAction="#onUpdate" />
-            <Button text="Delete" onAction="#onDelete" />
-        </HBox>
-    </TitledPane>
-    <Label fx:id="prevResults" />
-    <HBox alignment="CENTER_LEFT" spacing="10">
-    <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
-    <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
-    </HBox>
-    <LineChart fx:id="lineChart" title="Laid Eggs Data">
-        <xAxis>
-            <CategoryAxis fx:id="xAxis" />
-        </xAxis>
-        <yAxis>
-            <NumberAxis fx:id="yAxis" label="Amount of eggs" />
-        </yAxis>
-    </LineChart>
+    <MenuBar>
+        <menus>
+            <Menu text="File" >
+                <items>
+                    <MenuItem text="Export to pdf" />
+                    <MenuItem text="Save" />
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit" />
+                </items>
+            </Menu>
+            <Menu text="About">
+                <items>
+                    <MenuItem text="About this app" />
+                </items>
+            </Menu>
+        </menus>
+    </MenuBar>
+    <TabPane prefHeight="800.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+            <Tab text="Performance and Statistics">
+                <content>
+                    <VBox spacing="10.0">
+                        <TitledPane text="Daily Statistics">
+                            <content>
+                                <TableView fx:id="tableView" prefHeight="250.0" prefWidth="400.0">
+                                    <columns>
+                                        <TableColumn fx:id="dayColumn" prefWidth="200" text="Date">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="date" />
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                        <TableColumn fx:id="amountColumn" prefWidth="200" text="Amount of Eggs">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="amount" />
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                    </columns>
+                                </TableView>
+                            </content>
+                        </TitledPane>
+                        <TitledPane text="Add eggs manually">
+                            <content>
+                                <HBox alignment="BASELINE_LEFT" spacing="10">
+                                    <TextField fx:id="addManually" maxWidth="80" promptText="Enter amount" />
+                                    <DatePicker fx:id="datePicker" />
+                                    <Button onAction="#onManualSaveButtonClick" text="Add" />
+                                    <Button onAction="#onUpdate" text="Update" />
+                                    <Button onAction="#onDelete" text="Delete" />
+                                </HBox>
+                            </content>
+                        </TitledPane>
+                        <Label fx:id="prevResults" />
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
+                            <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
+                        </HBox>
+                        <LineChart fx:id="lineChart" title="Laid Eggs Data">
+                            <xAxis>
+                                <CategoryAxis fx:id="xAxis" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis fx:id="yAxis" label="Amount of eggs" />
+                            </yAxis>
+                        </LineChart>
+                    </VBox>
+                </content>
+            </Tab>
+            <Tab text="Sales">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
 </VBox>
