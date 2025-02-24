@@ -2,8 +2,10 @@ package org.statistic.eggs;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -46,7 +48,7 @@ public class Controller {
     private TextField inputField;
 
     @FXML
-    private BarChart<String, Number> barChart;
+    private LineChart<String, Number> lineChart;
 
     @FXML
     private ChoiceBox<String> choiceBox;
@@ -68,6 +70,7 @@ public class Controller {
 
     @FXML
     private DatePicker datePicker;
+    private boolean needRefresh = true;
 
 
     @FXML
@@ -84,20 +87,23 @@ public class Controller {
     }
 
     private void populateOptions() {
-        choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
-        choiceBox.setValue("– Select Statistic View –");
-        choiceBox.setOnAction(event -> {
-            if ("Monthly Statistic".equals(choiceBox.getValue())) {
-                showStatistic(StatisticView.MONTHLY);
-            }
-            if ("Days Statistic".equals(choiceBox.getValue())) {
-                showStatistic(StatisticView.DAILY);
-            }
-        });
+        if(needRefresh) {
+            choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
+            choiceBox.setValue("– Select Statistic View –");
+            choiceBox.setOnAction(event -> {
+                if ("Monthly Statistic".equals(choiceBox.getValue())) {
+                    showStatistic(StatisticView.MONTHLY);
+                }
+                if ("Days Statistic".equals(choiceBox.getValue())) {
+                    showStatistic(StatisticView.DAILY);
+                }
+            });
+            needRefresh = false;
+        }
     }
 
     private void showStatistic(StatisticView statisticView) {
-        barChart.getData().clear();
+        lineChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
         List<Counter> previous = StatisticDao.getAllData();
@@ -123,7 +129,7 @@ public class Controller {
         result.sort(Collections.reverseOrder());
         data.addAll(result);
         tableView.setItems(data);
-        barChart.getData().add(series);
+        lineChart.getData().add(series);
     }
 
     private static List<Counter> unitedAmountByDay(List<Counter> previous) {
@@ -195,6 +201,68 @@ public class Controller {
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Input Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void onUpdate() {
+        Counter selectedEntry = tableView.getSelectionModel().getSelectedItem();
+        if (selectedEntry == null) {
+            showError("Please select a row to update.");
+            return;
+        }
+        try {
+            int newAmount = Integer.parseInt(addManually.getText());
+            LocalDate newDate = datePicker.getValue();
+
+            if (newDate == null) {
+                showError("Please select a date.");
+                return;
+            }
+
+            selectedEntry.setAmount(newAmount);
+            selectedEntry.setDateTime(newDate);
+
+            tableView.refresh();
+
+            addManually.clear();
+            datePicker.setValue(null);
+            StatisticDao.deleteByDate(newDate);
+            if(newAmount > 0) {
+                Persistence<Counter> saver = new Persistence<>();
+                saver.persist(selectedEntry);
+            }
+        } catch (NumberFormatException e) {
+            showError("Please enter a valid number.");
+        }
+    }
+
+    public void onDelete() {
+        Counter selectedEntry = tableView.getSelectionModel().getSelectedItem();
+        if (selectedEntry == null) {
+            showError("Please select a row to update.");
+            return;
+        }
+        try {
+            StatisticDao.deleteByDate(selectedEntry.getDateTime());
+            showMessage("Entry for date " + selectedEntry.getDateTime() +
+                    System.lineSeparator() + "Amount " +
+                    selectedEntry.getAmount() +
+                    System.lineSeparator() +
+                    "Was Deleted");
+        } catch (NumberFormatException e) {
+            showError("Please enter a valid number.");
+        } finally {
+            initialize();
+            tableView.refresh();
+        }
+    }
+
+    private void showMessage(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Entry was successful deleted");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
