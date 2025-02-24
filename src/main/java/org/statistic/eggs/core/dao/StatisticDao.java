@@ -78,4 +78,20 @@ public class StatisticDao {
             e.printStackTrace();
         }
     }
+
+    public static void update(Counter selectedEntry) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.merge(selectedEntry);
+            transaction.commit();
+            System.out.println("Updated record: " + selectedEntry);
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Update failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

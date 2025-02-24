@@ -9,6 +9,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -35,6 +36,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Controller {
 
@@ -107,8 +109,8 @@ public class Controller {
         lineChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
-        List<Counter> previous = StatisticDao.getAllData();
-        List<Counter> result = unitedAmountByDay(previous);
+        List<Counter> result = StatisticDao.getAllData();
+
         result.sort(Comparator.comparing(Counter::getDateTime));
         Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
 
@@ -169,17 +171,6 @@ public class Controller {
     }
 
     @FXML
-    protected void onSaveButtonClick() {
-        Counter counter = new Counter();
-        counter.setAmount(Integer.parseInt(inputField.getText()));
-        counter.setDateTime(LocalDate.now());
-        Persistence<Counter> saver = new Persistence<>();
-        saver.persist(counter);
-        showStatistic(StatisticView.DAILY);
-        inputField.clear();
-    }
-
-    @FXML
     private void onManualSaveButtonClick() {
         try {
             List<Counter> allData = new ArrayList<>(tableView.getItems());
@@ -233,18 +224,15 @@ public class Controller {
         }
         try {
             int newAmount = Integer.parseInt(addManually.getText());
-
-            selectedEntry.setAmount(newAmount);
-            selectedEntry.setDateTime(selectedEntry.getDateTime());
-
-            tableView.refresh();
-
             addManually.clear();
             datePicker.setValue(null);
-            StatisticDao.deleteByDate(selectedEntry.getDateTime());
             if(newAmount > 0) {
-                Persistence<Counter> saver = new Persistence<>();
-                saver.persist(selectedEntry);
+                selectedEntry.setAmount(newAmount);
+                selectedEntry.setDateTime(selectedEntry.getDateTime());
+                tableView.refresh();
+                StatisticDao.update(selectedEntry);
+            } else {
+                showError("You put value 0 ");
             }
         } catch (NumberFormatException e) {
             showError("Please enter a valid number.");
@@ -254,23 +242,40 @@ public class Controller {
     public void onDelete() {
         Counter selectedEntry = tableView.getSelectionModel().getSelectedItem();
         if (selectedEntry == null) {
-            showError("Please select a row to update.");
+            showError("Please select a row to delete.");
             return;
         }
-        try {
-            StatisticDao.deleteByDate(selectedEntry.getDateTime());
-            showMessage("Entry for date " + selectedEntry.getDateTime() +
-                    System.lineSeparator() + "Amount " +
-                    selectedEntry.getAmount() +
-                    System.lineSeparator() +
-                    "Was Deleted");
-        } catch (NumberFormatException e) {
-            showError("Please enter a valid number.");
-        } finally {
-            initialize();
-            tableView.refresh();
+
+        // Викликаємо вікно підтвердження
+        boolean confirmed = showConfirmationDialog(
+                "Confirm Deletion",
+                "Are you sure you want to delete this entry?",
+                "Date: " + selectedEntry.getDateTime() + "\nAmount: " + selectedEntry.getAmount()
+        );
+
+        if (confirmed) {
+            try {
+                StatisticDao.deleteByDate(selectedEntry.getDateTime());
+                showMessage("Entry deleted:\nDate: " + selectedEntry.getDateTime() + "\nAmount: " + selectedEntry.getAmount());
+            } catch (Exception e) {
+                showError("Error deleting entry: " + e.getMessage());
+            } finally {
+                initialize();
+                tableView.refresh();
+            }
         }
     }
+
+    private boolean showConfirmationDialog(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
 
     private void showMessage(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
