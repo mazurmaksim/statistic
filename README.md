@@ -19,7 +19,7 @@ The application consists of two main parts:
 
 ## Technologies:
 - **JavaFX** – for the graphical user interface.
-- **Spring Boot** – for the backend, API, and database interactions.
+- **Spring Boot** – for the backend, API, and database interactions.(Not Implemented yet)
 - **JPA (Java Persistence API)** – for database management.
 - **PostgreSQL** – for storing feed mixture data.
 - **Maven** – for dependency management.
