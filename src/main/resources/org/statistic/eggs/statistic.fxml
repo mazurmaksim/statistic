@@ -10,12 +10,13 @@
     <padding>
         <Insets bottom="20.0" left="5.0" right="5.0"/>
     </padding>
-    <MenuBar>
+    <MenuBar fx:id="menuBar">
         <menus>
             <Menu text="File" >
                 <items>
                     <MenuItem text="Export to pdf" />
-                    <MenuItem text="Save" />
+                    <MenuItem text="Add new food" onAction="#showAddFoodDialog" />
+                    <MenuItem text="Edit food" />
                     <SeparatorMenuItem/>
                     <MenuItem text="Exit" />
                 </items>

@@ -12,11 +12,13 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.persistence.Persistence;
@@ -288,4 +290,15 @@ public class Controller {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    @FXML
+    private MenuBar menuBar;
+
+    @FXML
+    private void showAddFoodDialog() {
+        FeedCompositionDialog dialog = new FeedCompositionDialog();
+        Stage stage = (Stage) menuBar.getScene().getWindow();
+        dialog.showDialog(stage);
+    }
+
 }
