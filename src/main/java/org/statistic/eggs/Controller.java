@@ -29,6 +29,7 @@ import org.statistic.eggs.dialogs.FeedCompositionDialog;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Controller {
 
@@ -77,10 +80,35 @@ public class Controller {
 
     @FXML
     private void initialize() {
-        showStatistic(StatisticView.DAILY);
+        populateCharts();
         populateOptions();
         populateStatisticTable();
     }
+
+    private void populateCharts() {
+        if (choiceBox.getValue() != null) {
+            String selectedValue = choiceBox.getValue();
+
+            switch (selectedValue) {
+                case "– Select Statistic View –":
+                case "Days Statistic":
+                    showStatistic(StatisticView.DAILY);
+                    break;
+                case "Weeks Statistic":
+                    showStatistic(StatisticView.WEEKS);
+                    break;
+                case "Monthly Statistic":
+                    showStatistic(StatisticView.MONTHLY);
+                    break;
+                default:
+                    showStatistic(StatisticView.DAILY);
+                    break;
+            }
+        } else {
+            showStatistic(StatisticView.DAILY);
+        }
+    }
+
 
     private void populateStatisticTable() {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -90,7 +118,7 @@ public class Controller {
 
     private void populateOptions() {
         if(needRefresh) {
-            choiceBox.getItems().addAll("Monthly Statistic", "Days Statistic");
+            choiceBox.getItems().addAll("Days Statistic", "Weeks Statistic", "Monthly Statistic" );
             choiceBox.setValue("– Select Statistic View –");
             choiceBox.setOnAction(event -> {
                 if ("Monthly Statistic".equals(choiceBox.getValue())) {
@@ -98,6 +126,9 @@ public class Controller {
                 }
                 if ("Days Statistic".equals(choiceBox.getValue())) {
                     showStatistic(StatisticView.DAILY);
+                }
+                if ("Weeks Statistic".equals(choiceBox.getValue())) {
+                    showStatistic(StatisticView.WEEKS);
                 }
             });
             needRefresh = false;
@@ -109,21 +140,43 @@ public class Controller {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
         List<Counter> result = StatisticDao.getAllData();
-
         result.sort(Comparator.comparing(Counter::getDateTime));
-        Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
 
         if (statisticView == StatisticView.MONTHLY) {
-            monthStatistic.forEach((month, amount) -> {
+            Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
+            SortedMap<Month, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
+            sortedMonthStatistic.forEach((month, amount) -> {
                 series.getData().add(new XYChart.Data<>(month.name(), amount));
+            });
+        }
+
+        if (statisticView == StatisticView.WEEKS) {
+            Map<Integer, Integer> monthsStatistic = calculateAmountByWeek(result);
+            Map<Integer, Integer> weeksStatistic = new HashMap<>();
+            LocalDate today = LocalDate.now();
+            YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
+            int daysInMonth = currentMonth.lengthOfMonth();
+            int firstDayOfWeek = currentMonth.atDay(1).getDayOfWeek().getValue();
+
+            for (int day = 1; day <= daysInMonth; day++) {
+                int weekNumber = (day + firstDayOfWeek - 2) / 7;
+                weeksStatistic.put(weekNumber, weeksStatistic.getOrDefault(weekNumber, 0) + monthsStatistic.getOrDefault(day, 0));
+            }
+
+            SortedMap<Integer, Integer> sortedWeeksStatistic = new TreeMap<>(weeksStatistic);
+
+            sortedWeeksStatistic.forEach((week, amount) -> {
+                series.getData().add(new XYChart.Data<>("Тиждень " + (week + 1), amount));
             });
         }
 
         result.forEach(counter -> {
             if (statisticView == StatisticView.DAILY) {
-                series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
-                        + counter.getDateTime() + ")"
-                        , counter.getAmount()));
+                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth())) {
+                    series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
+                            + counter.getDateTime() + ")"
+                            , counter.getAmount()));
+                }
             }
         });
 
@@ -138,6 +191,16 @@ public class Controller {
             Tooltip.install(toolTipData.getNode(), tooltip);
             toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
         }
+    }
+
+    private Map<Integer, Integer> calculateAmountByWeek(List<Counter> previous) {
+        Map<Integer, Integer> amountByMonth = new HashMap<>();
+        for (Counter counter : previous) {
+            if(counter.getDateTime().getMonth().equals(LocalDate.now().getMonth())) {
+                amountByMonth.put(counter.getDateTime().getDayOfMonth(), amountByMonth.getOrDefault(counter.getDateTime().getDayOfMonth(), 0) + counter.getAmount());
+            }
+        }
+        return amountByMonth;
     }
 
     private static List<Counter> unitedAmountByDay(List<Counter> previous) {

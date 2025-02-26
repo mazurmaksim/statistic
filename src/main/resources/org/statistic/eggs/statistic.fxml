@@ -14,9 +14,9 @@
         <menus>
             <Menu text="File" >
                 <items>
-                    <MenuItem text="Export to pdf" />
                     <MenuItem text="Add new food" onAction="#showAddFoodDialog" />
-                    <MenuItem text="Edit food" />
+                    <MenuItem text="Food List" />
+                    <MenuItem text="Export to pdf" />
                     <SeparatorMenuItem/>
                     <MenuItem text="Exit" />
                 </items>
@@ -67,7 +67,7 @@
                             <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
                             <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
                         </HBox>
-                        <LineChart fx:id="lineChart" title="Laid Eggs Data">
+                        <LineChart fx:id="lineChart" title="Laid Eggs Data" animated="false">
                             <xAxis>
                                 <CategoryAxis fx:id="xAxis" />
                             </xAxis>
