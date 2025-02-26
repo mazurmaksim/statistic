@@ -3,29 +3,31 @@ package org.statistic.eggs.core.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Entity
+@Table(name = "feed_component")
 public class FeedComponent {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID id;
     @ManyToOne
-    @JoinColumn(name = "feed_composition_id")
+    @JoinColumn(name = "feed_composition_id", nullable = false)
     private FeedComposition feedComposition;
-
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
-
-    @Column(nullable = false)
+    @Column(name = "quantity", nullable = false)
     private String quantity;
 
-    public FeedComponent() {}
+    public FeedComponent() {
+    }
 
     public FeedComponent(String name, String quantity, FeedComposition feedComposition) {
         this.name = name;
@@ -33,17 +35,19 @@ public class FeedComponent {
         this.feedComposition = feedComposition;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
+
 
     public FeedComposition getFeedComposition() {
         return feedComposition;
     }
+
 
     public void setFeedComposition(FeedComposition feedComposition) {
         this.feedComposition = feedComposition;

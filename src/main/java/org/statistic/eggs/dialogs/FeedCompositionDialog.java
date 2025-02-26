@@ -1,4 +1,4 @@
-package org.statistic.eggs;
+package org.statistic.eggs.dialogs;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -6,16 +6,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.statistic.eggs.core.dao.StatisticDao;
+import org.statistic.eggs.core.entity.FeedComponent;
+import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.core.entity.Vitamin;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FeedCompositionDialog {
 
-    private List<TextField> componentNames = new ArrayList<>();
-    private List<TextField> componentQuantities = new ArrayList<>();
-    private List<TextField> vitaminNames = new ArrayList<>();
-    private List<TextField> vitaminQuantities = new ArrayList<>();
+    private final List<TextField> componentNames = new ArrayList<>();
+    private final List<TextField> componentQuantities = new ArrayList<>();
+    private final List<TextField> vitaminNames = new ArrayList<>();
+    private final List<TextField> vitaminQuantities = new ArrayList<>();
 
     public void showDialog(Stage parentStage) {
         Stage dialogStage = new Stage();
@@ -43,8 +47,10 @@ public class FeedCompositionDialog {
         addVitaminButton.setOnAction(e -> addVitaminField(vitaminBox));
 
         Button saveButton = new Button("Save");
+
+        List<FeedComponent> components = new ArrayList<>();
         saveButton.setOnAction(e -> {
-            saveData(mixtureNameField, datePicker);
+            saveMixturedComposition(mixtureNameField, datePicker);
             dialogStage.close();
         });
 
@@ -104,22 +110,39 @@ public class FeedCompositionDialog {
         container.getChildren().add(grid);
     }
 
-//    TODO: Implement saving to the database
-    private void saveData(TextField mixtureNameField, DatePicker datePicker) {
+    //    TODO: Implement saving to the database
+    private void saveMixturedComposition(TextField mixtureNameField, DatePicker datePicker) {
         String mixtureName = mixtureNameField.getText();
         String date = (datePicker.getValue() != null) ? datePicker.getValue().toString() : "No date";
 
-        System.out.println("Mixture Name: " + mixtureName);
-        System.out.println("Date: " + date);
-        System.out.println("Feed Components:");
+        // Create FeedComposition entity
+        FeedComposition feedComposition = new FeedComposition();
+        feedComposition.setName(mixtureName);
+        feedComposition.setDate(date);
 
+        // Create FeedComponent entities and add them to the FeedComposition
+        List<FeedComponent> feedComponents = new ArrayList<>();
         for (int i = 0; i < componentNames.size(); i++) {
-            System.out.println("- " + componentNames.get(i).getText() + ": " + componentQuantities.get(i).getText());
+            FeedComponent component = new FeedComponent();
+            component.setName(componentNames.get(i).getText());
+            component.setQuantity(componentQuantities.get(i).getText());
+            component.setFeedComposition(feedComposition); // Set the feed composition for this component
+            feedComponents.add(component);
         }
 
-        System.out.println("Vitamin Additives:");
+        // Create Vitamin entities and add them to the FeedComposition
+        List<Vitamin> vitamins = new ArrayList<>();
         for (int i = 0; i < vitaminNames.size(); i++) {
-            System.out.println("- " + vitaminNames.get(i).getText() + ": " + vitaminQuantities.get(i).getText());
+            Vitamin vitamin = new Vitamin();
+            vitamin.setName(vitaminNames.get(i).getText());
+            vitamin.setQuantity(vitaminQuantities.get(i).getText());
+            vitamin.setFeedComposition(feedComposition); // Set the feed composition for this vitamin
+            vitamins.add(vitamin);
         }
+
+        feedComposition.setComponents(feedComponents);
+        feedComposition.setVitamins(vitamins);
+
+        StatisticDao.saveFeedComposition(feedComposition);
     }
 }

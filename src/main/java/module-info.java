@@ -15,4 +15,6 @@ module org.example.demo {
     exports org.statistic.eggs;
     exports org.statistic.eggs.core.views;
     opens org.statistic.eggs.core.views to javafx.fxml;
+    exports org.statistic.eggs.dialogs;
+    opens org.statistic.eggs.dialogs to javafx.fxml;
 }

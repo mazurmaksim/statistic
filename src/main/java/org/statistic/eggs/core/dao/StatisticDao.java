@@ -7,6 +7,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.statistic.eggs.core.entity.Counter;
+import org.statistic.eggs.core.entity.FeedComposition;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -91,6 +92,27 @@ public class StatisticDao {
                 transaction.rollback();
             }
             System.err.println("Update failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveFeedComposition(FeedComposition feedComposition) {
+        // Now save the FeedComposition (which will also save FeedComponents and Vitamins due to cascade)
+        Transaction transaction = null;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            // Save the FeedComposition, which will cascade to FeedComponents and Vitamins
+            session.merge(feedComposition);
+
+            transaction.commit();
+            System.out.println("Saved mixture composition: " + feedComposition);
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Save failed: " + e.getMessage());
             e.printStackTrace();
         }
     }

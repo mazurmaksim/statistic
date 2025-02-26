@@ -13,12 +13,18 @@
 
         <property name="hibernate.transaction.coordinator_class">jdbc</property>
 
-        <property name="hibernate.packagesToScan">org.example.demo.entity</property>
-        <property name="hibernate.autocommit">true</property>
+        <property name="hibernate.packagesToScan">org.statistic.eggs.core.entity</property>
 
-        <!-- Опціонально: Логування SQL-запитів -->
+        <!-- <property name="hibernate.autocommit">true</property> -->
+
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
         <mapping class="org.statistic.eggs.core.entity.Counter"/>
+        <mapping class="org.statistic.eggs.core.entity.FeedComponent"/>
+        <mapping class="org.statistic.eggs.core.entity.FeedComposition"/>
+        <mapping class="org.statistic.eggs.core.entity.Vitamin"/>
+
     </session-factory>
 </hibernate-configuration>

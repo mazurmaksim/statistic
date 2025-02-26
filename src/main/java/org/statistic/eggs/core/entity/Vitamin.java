@@ -1,31 +1,29 @@
 package org.statistic.eggs.core.entity;
 
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 
 @Entity
+@Table(name = "vitamin")
+@Access(AccessType.PROPERTY)
 public class Vitamin {
 
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "feed_composition_id")
     private FeedComposition feedComposition;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String quantity;
 
     public Vitamin() {}
@@ -36,6 +34,9 @@ public class Vitamin {
         this.feedComposition = feedComposition;
     }
 
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     public UUID getId() {
         return id;
     }
@@ -44,6 +45,8 @@ public class Vitamin {
         this.id = id;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "feed_composition_id", nullable = false)
     public FeedComposition getFeedComposition() {
         return feedComposition;
     }
@@ -52,6 +55,7 @@ public class Vitamin {
         this.feedComposition = feedComposition;
     }
 
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -60,6 +64,7 @@ public class Vitamin {
         this.name = name;
     }
 
+    @Column(nullable = false)
     public String getQuantity() {
         return quantity;
     }

@@ -1,45 +1,40 @@
 package org.statistic.eggs.core.entity;
 
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Table(name = "feed_composition")
+@Access(AccessType.PROPERTY)
 public class FeedComposition {
+
+    private UUID id;
+
+    private String name;
+
+    private String date;
+
+    private List<FeedComponent> components;
+
+    private List<Vitamin> vitamins;
+
+    public FeedComposition() {
+    }
 
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String date;
-
-    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FeedComponent> components;
-
-    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vitamin> vitamins;
-
-    public FeedComposition() {}
-
-    public FeedComposition(String name, String date, List<FeedComponent> components, List<Vitamin> vitamins) {
-        this.name = name;
-        this.date = date;
-        this.components = components;
-        this.vitamins = vitamins;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -48,6 +43,7 @@ public class FeedComposition {
         this.id = id;
     }
 
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -56,6 +52,7 @@ public class FeedComposition {
         this.name = name;
     }
 
+    @Column(nullable = false)
     public String getDate() {
         return date;
     }
@@ -64,6 +61,7 @@ public class FeedComposition {
         this.date = date;
     }
 
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<FeedComponent> getComponents() {
         return components;
     }
@@ -72,6 +70,7 @@ public class FeedComposition {
         this.components = components;
     }
 
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Vitamin> getVitamins() {
         return vitamins;
     }

@@ -24,6 +24,7 @@ import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
+import org.statistic.eggs.dialogs.FeedCompositionDialog;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
