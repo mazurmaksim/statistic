@@ -29,4 +29,4 @@ The application consists of two main parts:
 
 ### 1. Clone the Repository:
 ```bash
-git clone [https://github.com/your-repo/egg-production-feed-tracker.git](https://github.com/mazurmaksim/statistic.git)
+git clone https://github.com/your-repo/egg-production-feed-tracker.git
