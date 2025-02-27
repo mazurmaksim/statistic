@@ -29,6 +29,7 @@ import org.statistic.eggs.dialogs.FeedCompositionDialog;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.Year;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,15 +91,14 @@ public class Controller {
             String selectedValue = choiceBox.getValue();
 
             switch (selectedValue) {
-                case "– Select Statistic View –":
-                case "Days Statistic":
-                    showStatistic(StatisticView.DAILY);
-                    break;
                 case "Weeks Statistic":
                     showStatistic(StatisticView.WEEKS);
                     break;
                 case "Monthly Statistic":
                     showStatistic(StatisticView.MONTHLY);
+                    break;
+                case "Yearly Statistic":
+                    showStatistic(StatisticView.YEARLY);
                     break;
                 default:
                     showStatistic(StatisticView.DAILY);
@@ -109,7 +109,6 @@ public class Controller {
         }
     }
 
-
     private void populateStatisticTable() {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         dayColumn.setCellValueFactory(new PropertyValueFactory<>("dateTime"));
@@ -118,7 +117,7 @@ public class Controller {
 
     private void populateOptions() {
         if(needRefresh) {
-            choiceBox.getItems().addAll("Days Statistic", "Weeks Statistic", "Monthly Statistic" );
+            choiceBox.getItems().addAll("Days Statistic", "Weeks Statistic", "Monthly Statistic", "Yearly Statistic" );
             choiceBox.setValue("– Select Statistic View –");
             choiceBox.setOnAction(event -> {
                 if ("Monthly Statistic".equals(choiceBox.getValue())) {
@@ -129,6 +128,9 @@ public class Controller {
                 }
                 if ("Weeks Statistic".equals(choiceBox.getValue())) {
                     showStatistic(StatisticView.WEEKS);
+                }
+                if ("Yearly Statistic".equals(choiceBox.getValue())) {
+                    showStatistic(StatisticView.YEARLY);
                 }
             });
             needRefresh = false;
@@ -141,6 +143,14 @@ public class Controller {
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
         List<Counter> result = StatisticDao.getAllData();
         result.sort(Comparator.comparing(Counter::getDateTime));
+
+        if (statisticView == StatisticView.YEARLY) {
+            Map<Integer, Integer> monthStatistic = calculateAmountByYear(result);
+            SortedMap<Integer, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
+            sortedMonthStatistic.forEach((year, amount) -> {
+                series.getData().add(new XYChart.Data<>(year.toString(), amount));
+            });
+        }
 
         if (statisticView == StatisticView.MONTHLY) {
             Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
@@ -166,13 +176,13 @@ public class Controller {
             SortedMap<Integer, Integer> sortedWeeksStatistic = new TreeMap<>(weeksStatistic);
 
             sortedWeeksStatistic.forEach((week, amount) -> {
-                series.getData().add(new XYChart.Data<>("Тиждень " + (week + 1), amount));
+                series.getData().add(new XYChart.Data<>("Week " + (week + 1), amount));
             });
         }
 
         result.forEach(counter -> {
             if (statisticView == StatisticView.DAILY) {
-                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth())) {
+                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth()) && counter.getDateTime().getYear() == LocalDate.now().getYear()) {
                     series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
                             + counter.getDateTime() + ")"
                             , counter.getAmount()));
@@ -193,10 +203,18 @@ public class Controller {
         }
     }
 
+    private Map<Integer, Integer> calculateAmountByYear(List<Counter> previous) {
+        Map<Integer, Integer> amountByMonth = new HashMap<>();
+        for (Counter counter : previous) {
+            amountByMonth.put(counter.getDateTime().getYear(), amountByMonth.getOrDefault(counter.getDateTime().getYear(), 0) + counter.getAmount());
+        }
+        return amountByMonth;
+    }
+
     private Map<Integer, Integer> calculateAmountByWeek(List<Counter> previous) {
         Map<Integer, Integer> amountByMonth = new HashMap<>();
         for (Counter counter : previous) {
-            if(counter.getDateTime().getMonth().equals(LocalDate.now().getMonth())) {
+            if(counter.getDateTime().getMonth().equals(LocalDate.now().getMonth()) && counter.getDateTime().getYear() == LocalDate.now().getYear()) {
                 amountByMonth.put(counter.getDateTime().getDayOfMonth(), amountByMonth.getOrDefault(counter.getDateTime().getDayOfMonth(), 0) + counter.getAmount());
             }
         }
@@ -227,7 +245,8 @@ public class Controller {
     private static Map<Month, Integer> calculateAmountByMonth(List<Counter> previous) {
         Map<Month, Integer> amountByMonth = new HashMap<>();
         for (Counter counter : previous) {
-            amountByMonth.put(counter.getDateTime().getMonth(), amountByMonth.getOrDefault(counter.getDateTime().getMonth(), 0) + counter.getAmount());
+            if (counter.getDateTime().getYear() == LocalDate.now().getYear())
+                amountByMonth.put(counter.getDateTime().getMonth(), amountByMonth.getOrDefault(counter.getDateTime().getMonth(), 0) + counter.getAmount());
         }
         return amountByMonth;
     }
@@ -316,7 +335,6 @@ public class Controller {
             return;
         }
 
-        // Викликаємо вікно підтвердження
         boolean confirmed = showConfirmationDialog(
                 "Confirm Deletion",
                 "Are you sure you want to delete this entry?",
