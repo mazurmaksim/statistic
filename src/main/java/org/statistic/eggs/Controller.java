@@ -6,18 +6,18 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
@@ -29,7 +29,6 @@ import org.statistic.eggs.dialogs.FeedCompositionDialog;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,47 +42,35 @@ import java.util.TreeMap;
 
 public class Controller {
 
-    // TODO: Implement manual add
     @FXML
     public TextField addManually;
-
     @FXML
-    private Label prevResults;
-
+    public LineChart<String, Number> historyChart;
     @FXML
-    private TextField inputField;
-
+    private TreeView<String> historyTree;
     @FXML
     private LineChart<String, Number> lineChart;
-
     @FXML
     private ChoiceBox<String> choiceBox;
-
-    @FXML
-    private Button toggleStatsButton;
-
-    @FXML
-    private ListView<String> listView;
-
     @FXML
     private TableView<Counter> tableView;
-
     @FXML
     private TableColumn<Counter, String> dayColumn;
-
     @FXML
     private TableColumn<Counter, Integer> amountColumn;
-
     @FXML
     private DatePicker datePicker;
-    private boolean needRefresh = true;
+    @FXML
+    private MenuBar menuBar;
 
+    private boolean needRefresh = true;
 
     @FXML
     private void initialize() {
         populateCharts();
         populateOptions();
         populateStatisticTable();
+        historyTree.setOnMouseClicked(this::handleTreeClick);
     }
 
     private void populateCharts() {
@@ -144,6 +131,7 @@ public class Controller {
         List<Counter> result = StatisticDao.getAllData();
         result.sort(Comparator.comparing(Counter::getDateTime));
 
+        addHistoryRecord(result);
         if (statisticView == StatisticView.YEARLY) {
             Map<Integer, Integer> monthStatistic = calculateAmountByYear(result);
             SortedMap<Integer, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
@@ -172,11 +160,11 @@ public class Controller {
                 int weekNumber = (day + firstDayOfWeek - 2) / 7;
                 weeksStatistic.put(weekNumber, weeksStatistic.getOrDefault(weekNumber, 0) + monthsStatistic.getOrDefault(day, 0));
             }
-
             SortedMap<Integer, Integer> sortedWeeksStatistic = new TreeMap<>(weeksStatistic);
-
             sortedWeeksStatistic.forEach((week, amount) -> {
-                series.getData().add(new XYChart.Data<>("Week " + (week + 1), amount));
+                if(week != 0 && amount !=0) {
+                    series.getData().add(new XYChart.Data<>("Week " + (week), amount));
+                }
             });
         }
 
@@ -373,8 +361,74 @@ public class Controller {
         alert.showAndWait();
     }
 
-    @FXML
-    private MenuBar menuBar;
+    public void addHistoryRecord(List<Counter> allStatistic) {
+        if (historyTree.getRoot() == null) {
+            historyTree.setRoot(new TreeItem<>("History"));
+        }
+        TreeItem<String> root = historyTree.getRoot();
+
+        for (Counter counter : allStatistic) {
+            LocalDate date = counter.getDateTime();
+            int year = date.getYear();
+            Month month = date.getMonth();
+
+            TreeItem<String> yearNode = getOrCreateNode(root, String.valueOf(year));
+            getOrCreateNode(yearNode, month.name());
+        }
+    }
+
+    private TreeItem<String> getOrCreateNode(TreeItem<String> parent, String value) {
+        return parent.getChildren().stream()
+                .filter(node -> node.getValue().equals(value))
+                .findFirst()
+                .orElseGet(() -> {
+                    TreeItem<String> newNode = new TreeItem<>(value);
+                    parent.getChildren().add(newNode);
+                    return newNode;
+                });
+    }
+
+    private void handleTreeClick(MouseEvent event) {
+        TreeItem<String> selectedItem = historyTree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null || selectedItem.getParent() == null) return;
+
+        TreeItem<String> yearNode = selectedItem.getParent();
+        if (yearNode == null) return;
+        try {
+            int year = Integer.parseInt(yearNode.getValue());
+            Month month = Month.valueOf(selectedItem.getValue());
+            showStatisticForMonth(year, month);
+        } catch (NumberFormatException ignore) {
+
+        }
+
+    }
+
+    private void showStatisticForMonth(int year, Month month) {
+        historyChart.getData().clear();
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName(String.valueOf(LocalDateTime.now().getYear()));
+        List<Counter> allData = StatisticDao.getAllData();
+
+        List<Counter> result = allData.stream()
+                .filter(f -> f.getDateTime().getYear() == year && f.getDateTime().getMonth().equals(month))
+                .sorted(Comparator.comparing(Counter::getDateTime))
+                .toList();
+
+        result.forEach(counter -> {
+            series.getData().add(new XYChart.Data<>(
+                    DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + " (" + counter.getDateTime() + ")",
+                    counter.getAmount()
+            ));
+        });
+
+        historyChart.getData().add(series);
+        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+            Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
+            Tooltip.install(toolTipData.getNode(), tooltip);
+            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+        }
+    }
 
     @FXML
     private void showAddFoodDialog() {

@@ -6,18 +6,18 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="600" prefWidth="800" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.statistic.eggs.Controller">
+<VBox prefHeight="800" prefWidth="1000" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.statistic.eggs.Controller">
     <padding>
-        <Insets bottom="20.0" left="5.0" right="5.0"/>
+        <Insets bottom="20.0" left="5.0" right="5.0" />
     </padding>
     <MenuBar fx:id="menuBar">
         <menus>
-            <Menu text="File" >
+            <Menu text="File">
                 <items>
-                    <MenuItem text="Add new food" onAction="#showAddFoodDialog" />
+                    <MenuItem onAction="#showAddFoodDialog" text="Add new food" />
                     <MenuItem text="Food List" />
                     <MenuItem text="Export to pdf" />
-                    <SeparatorMenuItem/>
+                    <SeparatorMenuItem />
                     <MenuItem text="Exit" />
                 </items>
             </Menu>
@@ -62,12 +62,13 @@
                                 </HBox>
                             </content>
                         </TitledPane>
-                        <Label fx:id="prevResults" />
+                        <TitledPane text="Views for current Year and Months">
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
                             <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
                         </HBox>
-                        <LineChart fx:id="lineChart" title="Laid Eggs Data" animated="false">
+                        </TitledPane>
+                        <LineChart fx:id="lineChart" animated="false" title="Laid Eggs Data">
                             <xAxis>
                                 <CategoryAxis fx:id="xAxis" />
                             </xAxis>
@@ -78,9 +79,20 @@
                     </VBox>
                 </content>
             </Tab>
-            <Tab text="Sales">
+            <Tab text="History">
                 <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                     <TreeView fx:id="historyTree" layoutX="14.0" layoutY="31.0" prefHeight="637.0" prefWidth="200.0" />
+                     <LineChart layoutX="224.0" fx:id="historyChart" animated="false" layoutY="25.0" prefHeight="667.0" prefWidth="755.0">
+                       <xAxis>
+                         <CategoryAxis side="BOTTOM" />
+                       </xAxis>
+                       <yAxis>
+                         <NumberAxis side="LEFT" />
+                       </yAxis>
+                     </LineChart>
+                  </children></AnchorPane>
                 </content>
             </Tab>
         </tabs>
