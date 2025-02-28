@@ -6,6 +6,7 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.statistic.eggs.handler.ErrorHandler;
 
 public class Persistence <T> {
 
@@ -21,6 +22,7 @@ public class Persistence <T> {
                     .buildSessionFactory();
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(registry);
+            ErrorHandler.showErrorDialog(e);
             throw new ExceptionInInitializerError("SessionFactory creation failed: " + e.getMessage());
         }
     }
@@ -33,8 +35,7 @@ public class Persistence <T> {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            System.err.println("Transaction failed: " + e.getMessage());
-            e.printStackTrace();
+           ErrorHandler.showErrorDialog(e);
         }
     }
 }

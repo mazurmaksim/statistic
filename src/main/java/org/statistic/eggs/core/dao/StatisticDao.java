@@ -8,6 +8,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.handler.ErrorHandler;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class StatisticDao {
                     .buildSessionFactory();
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(registry);
+            ErrorHandler.showErrorDialog(e);
             throw new ExceptionInInitializerError("SessionFactory creation failed: " + e.getMessage());
         }
     }
@@ -40,8 +42,7 @@ public class StatisticDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            System.err.println("Transaction failed: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.showErrorDialog(e);
         }
         return result;
     }
@@ -53,8 +54,7 @@ public class StatisticDao {
                     .setParameter("date", date)
                     .list();
         } catch (Exception e) {
-            System.err.println("Query failed: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.showErrorDialog(e);
         }
         return result;
     }
@@ -75,8 +75,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();  // Тільки якщо транзакція активна
             }
-            System.err.println("Delete failed: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.showErrorDialog(e);
         }
     }
 
@@ -91,8 +90,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            System.err.println("Update failed: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.showErrorDialog(e);
         }
     }
 
@@ -105,15 +103,12 @@ public class StatisticDao {
 
             // Save the FeedComposition, which will cascade to FeedComponents and Vitamins
             session.merge(feedComposition);
-
             transaction.commit();
-            System.out.println("Saved mixture composition: " + feedComposition);
         } catch (Exception e) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            System.err.println("Save failed: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.showErrorDialog(e);
         }
     }
 }

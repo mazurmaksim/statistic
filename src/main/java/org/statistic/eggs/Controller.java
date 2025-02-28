@@ -401,7 +401,6 @@ public class Controller {
         } catch (NumberFormatException ignore) {
 
         }
-
     }
 
     private void showStatisticForMonth(int year, Month month) {
@@ -436,5 +435,4 @@ public class Controller {
         Stage stage = (Stage) menuBar.getScene().getWindow();
         dialog.showDialog(stage);
     }
-
 }
