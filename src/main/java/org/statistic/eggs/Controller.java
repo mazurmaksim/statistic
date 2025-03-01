@@ -9,7 +9,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -25,6 +27,7 @@ import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
 import org.statistic.eggs.dialogs.FeedCompositionDialog;
+import org.statistic.eggs.handler.ErrorHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,6 +50,8 @@ public class Controller {
     @FXML
     public LineChart<String, Number> historyChart;
     @FXML
+    public Slider historySlider;
+    @FXML
     private TreeView<String> historyTree;
     @FXML
     private LineChart<String, Number> lineChart;
@@ -64,13 +69,20 @@ public class Controller {
     private MenuBar menuBar;
 
     private boolean needRefresh = true;
+    private int counter = 7;
 
     @FXML
     private void initialize() {
-        populateCharts();
-        populateOptions();
-        populateStatisticTable();
-        historyTree.setOnMouseClicked(this::handleTreeClick);
+        try {
+
+            populateCharts();
+            populateOptions();
+            populateStatisticTable();
+            historyTree.setOnMouseClicked(this::handleTreeClick);
+            manipulateSlider();
+        } catch (Exception e) {
+            ErrorHandler.showErrorDialog(e);
+        }
     }
 
     private void populateCharts() {
@@ -125,69 +137,82 @@ public class Controller {
     }
 
     private void showStatistic(StatisticView statisticView) {
-        lineChart.getData().clear();
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName(String.valueOf(LocalDateTime.now().getYear()));
-        List<Counter> result = StatisticDao.getAllData();
-        result.sort(Comparator.comparing(Counter::getDateTime));
-
-        addHistoryRecord(result);
-        if (statisticView == StatisticView.YEARLY) {
-            Map<Integer, Integer> monthStatistic = calculateAmountByYear(result);
-            SortedMap<Integer, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
-            sortedMonthStatistic.forEach((year, amount) -> {
-                series.getData().add(new XYChart.Data<>(year.toString(), amount));
-            });
-        }
-
-        if (statisticView == StatisticView.MONTHLY) {
-            Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
-            SortedMap<Month, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
-            sortedMonthStatistic.forEach((month, amount) -> {
-                series.getData().add(new XYChart.Data<>(month.name(), amount));
-            });
-        }
-
-        if (statisticView == StatisticView.WEEKS) {
-            Map<Integer, Integer> monthsStatistic = calculateAmountByWeek(result);
-            Map<Integer, Integer> weeksStatistic = new HashMap<>();
-            LocalDate today = LocalDate.now();
-            YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
-            int daysInMonth = currentMonth.lengthOfMonth();
-            int firstDayOfWeek = currentMonth.atDay(1).getDayOfWeek().getValue();
-
-            for (int day = 1; day <= daysInMonth; day++) {
-                int weekNumber = (day + firstDayOfWeek - 2) / 7;
-                weeksStatistic.put(weekNumber, weeksStatistic.getOrDefault(weekNumber, 0) + monthsStatistic.getOrDefault(day, 0));
+        try {
+            lineChart.getData().clear();
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName(String.valueOf(LocalDateTime.now().getYear()));
+            List<Counter> result = StatisticDao.getAllData();
+            result.sort(Comparator.comparing(Counter::getDateTime));
+            historySlider.setMax(result.size() - counter);
+            addHistoryRecord(result);
+            if (statisticView == StatisticView.YEARLY) {
+                historySlider.setVisible(false);
+                Map<Integer, Integer> monthStatistic = calculateAmountByYear(result);
+                SortedMap<Integer, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
+                sortedMonthStatistic.forEach((year, amount) -> {
+                    series.getData().add(new XYChart.Data<>(year.toString(), amount));
+                });
             }
-            SortedMap<Integer, Integer> sortedWeeksStatistic = new TreeMap<>(weeksStatistic);
-            sortedWeeksStatistic.forEach((week, amount) -> {
-                if(week != 0 && amount !=0) {
-                    series.getData().add(new XYChart.Data<>("Week " + (week), amount));
-                }
-            });
-        }
 
-        result.forEach(counter -> {
-            if (statisticView == StatisticView.DAILY) {
-                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth()) && counter.getDateTime().getYear() == LocalDate.now().getYear()) {
-                    series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
-                            + counter.getDateTime() + ")"
-                            , counter.getAmount()));
-                }
+            if (statisticView == StatisticView.MONTHLY) {
+                lineChart.getData().clear();
+                historySlider.setVisible(false);
+                Map<Month, Integer> monthStatistic = calculateAmountByMonth(result);
+                SortedMap<Month, Integer> sortedMonthStatistic = new TreeMap<>(monthStatistic);
+                sortedMonthStatistic.forEach((month, amount) -> {
+                    series.getData().add(new XYChart.Data<>(month.name(), amount));
+                });
             }
-        });
 
-        ObservableList<Counter> data = FXCollections.observableArrayList();
-        result.sort(Collections.reverseOrder());
-        data.addAll(result);
-        tableView.setItems(data);
-        lineChart.getData().add(series);
+            if (statisticView == StatisticView.WEEKS) {
+                historySlider.setVisible(false);
+                lineChart.getData().clear();
+                Map<Integer, Integer> monthsStatistic = calculateAmountByWeek(result);
+                Map<Integer, Integer> weeksStatistic = new HashMap<>();
+                LocalDate today = LocalDate.now();
+                YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
+                int daysInMonth = currentMonth.lengthOfMonth();
+                int firstDayOfWeek = currentMonth.atDay(1).getDayOfWeek().getValue();
 
-        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
-            Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
-            Tooltip.install(toolTipData.getNode(), tooltip);
-            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+                for (int day = 1; day <= daysInMonth; day++) {
+                    int weekNumber = (day + firstDayOfWeek - 2) / 7;
+                    weeksStatistic.put(weekNumber, weeksStatistic.getOrDefault(weekNumber, 0) + monthsStatistic.getOrDefault(day, 0));
+                }
+                SortedMap<Integer, Integer> sortedWeeksStatistic = new TreeMap<>(weeksStatistic);
+                sortedWeeksStatistic.forEach((week, amount) -> {
+                    if (week != 0 && amount != 0) {
+                        series.getData().add(new XYChart.Data<>("Week " + (week), amount));
+                    }
+                });
+            }
+
+            result.stream()
+                    .skip(Math.max(0, result.size() - counter)).forEach(counter -> {
+                        if (statisticView == StatisticView.DAILY) {
+                            lineChart.getData().clear();
+                            historySlider.setVisible(true);
+//                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth()) && counter.getDateTime().getYear() == LocalDate.now().getYear()) {
+                            if (counter.getDateTime().getYear() == LocalDate.now().getYear()) {
+                                series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
+                                        + counter.getDateTime() + ")"
+                                        , counter.getAmount()));
+                            }
+                        }
+                    });
+
+            ObservableList<Counter> data = FXCollections.observableArrayList();
+            result.sort(Collections.reverseOrder());
+            data.addAll(result);
+            tableView.setItems(data);
+            lineChart.getData().add(series);
+
+            for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+                Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
+                Tooltip.install(toolTipData.getNode(), tooltip);
+                toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+            }
+        } catch (Exception e) {
+            ErrorHandler.showErrorDialog(e);
         }
     }
 
@@ -435,4 +460,39 @@ public class Controller {
         Stage stage = (Stage) menuBar.getScene().getWindow();
         dialog.showDialog(stage);
     }
+
+    private void manipulateSlider() {
+        Tooltip tooltipSlider = new Tooltip("Slide to see dynamic");
+        Tooltip.install(historySlider, tooltipSlider);
+        historySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            int diff = newVal.intValue() - oldVal.intValue();
+            counter += diff;
+            lineChart.getData().clear();
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName(String.valueOf(LocalDateTime.now().getYear()));
+
+            List<Counter> result = StatisticDao.getAllData();
+            Collections.sort(result);
+            List<Counter> filteredData = result.stream()
+                    .skip(Math.max(0, result.size() - counter))
+                    .toList();
+
+            filteredData.forEach(counter -> {
+                    series.getData().add(new XYChart.Data<>(
+                            DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + " (" + counter.getDateTime() + ")",
+                            counter.getAmount()));
+            });
+
+            ObservableList<Counter> data = FXCollections.observableArrayList(filteredData);
+            tableView.setItems(data);
+            lineChart.getData().add(series);
+
+            for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+                Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
+                Tooltip.install(toolTipData.getNode(), tooltip);
+                toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+            }
+        });
+    }
+
 }

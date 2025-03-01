@@ -68,6 +68,7 @@
                             <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
                         </HBox>
                         </TitledPane>
+                        <Slider fx:id="historySlider" prefWidth="776.0" />
                         <LineChart fx:id="lineChart" animated="false" title="Laid Eggs Data">
                             <xAxis>
                                 <CategoryAxis fx:id="xAxis" />
@@ -79,12 +80,13 @@
                     </VBox>
                 </content>
             </Tab>
+            <Tab text="Sales" />
             <Tab text="History">
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                   <children>
                      <TreeView fx:id="historyTree" layoutX="14.0" layoutY="31.0" prefHeight="637.0" prefWidth="200.0" />
-                     <LineChart layoutX="224.0" fx:id="historyChart" animated="false" layoutY="25.0" prefHeight="667.0" prefWidth="755.0">
+                     <LineChart fx:id="historyChart" animated="false" layoutX="224.0" layoutY="25.0" prefHeight="667.0" prefWidth="755.0">
                        <xAxis>
                          <CategoryAxis side="BOTTOM" />
                        </xAxis>
@@ -97,4 +99,5 @@
             </Tab>
         </tabs>
     </TabPane>
+
 </VBox>
