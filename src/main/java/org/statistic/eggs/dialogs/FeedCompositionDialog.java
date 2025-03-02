@@ -124,7 +124,7 @@ public class FeedCompositionDialog {
         List<FeedComponent> feedComponents = new ArrayList<>();
         for (int i = 0; i < componentNames.size(); i++) {
             FeedComponent component = new FeedComponent();
-            component.setName(componentNames.get(i).getText());
+            component.setComponentName(componentNames.get(i).getText());
             component.setQuantity(componentQuantities.get(i).getText());
             component.setFeedComposition(feedComposition); // Set the feed composition for this component
             feedComponents.add(component);
@@ -134,7 +134,7 @@ public class FeedCompositionDialog {
         List<Vitamin> vitamins = new ArrayList<>();
         for (int i = 0; i < vitaminNames.size(); i++) {
             Vitamin vitamin = new Vitamin();
-            vitamin.setName(vitaminNames.get(i).getText());
+            vitamin.setVitaminName(vitaminNames.get(i).getText());
             vitamin.setQuantity(vitaminQuantities.get(i).getText());
             vitamin.setFeedComposition(feedComposition); // Set the feed composition for this vitamin
             vitamins.add(vitamin);

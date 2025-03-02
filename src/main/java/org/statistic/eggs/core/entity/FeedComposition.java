@@ -5,6 +5,7 @@ import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -58,12 +59,12 @@ public class FeedComposition {
         this.date = date;
     }
 
-    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<FeedComponent> getComponents() {
         return components;
     }
 
-    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<Counter> getCounter() {
         return counter;
     }
@@ -77,7 +78,7 @@ public class FeedComposition {
         this.components = components;
     }
 
-    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<Vitamin> getVitamins() {
         return vitamins;
     }

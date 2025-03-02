@@ -4,14 +4,19 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -20,16 +25,20 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
+import org.statistic.eggs.core.entity.FeedComponent;
 import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.core.entity.Vitamin;
 import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
 import org.statistic.eggs.dialogs.FeedCompositionDialog;
 import org.statistic.eggs.handler.ErrorHandler;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -79,7 +88,7 @@ public class Controller {
     @FXML
     private void initialize() {
         try {
-
+            populateComponents();
             populateCharts();
             populateOptions();
             populateStatisticTable();
@@ -127,6 +136,52 @@ public class Controller {
             FeedComposition feedComposition = counter.getFeedComposition();
             return new SimpleStringProperty(feedComposition != null ? feedComposition.getName() : "N/A");
         });
+    }
+
+    private void populateComponents() {
+        foodPlan.setCellFactory(tc -> new TableCell<Counter, String>() {
+            private final Hyperlink link = new Hyperlink();
+
+            {
+                link.setOnAction(event -> {
+                    Counter counter = getTableView().getItems().get(getIndex());
+                    FeedComposition feedComposition = counter.getFeedComposition();
+                    if (feedComposition != null) {
+                        showFoodPlanDetails(feedComposition);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    link.setText(item);
+                    setGraphic(link);
+                }
+            }
+        });
+
+    }
+
+    private void showFoodPlanDetails(FeedComposition feedComposition) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/statistic/eggs/foodPlanDetails.fxml"));
+            Parent root = loader.load();
+
+            FoodPlanController controller = loader.getController();
+            controller.setFoodComposition(feedComposition);
+
+            Stage stage = new Stage();
+            stage.setTitle("Food Plan Details");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void populateOptions() {

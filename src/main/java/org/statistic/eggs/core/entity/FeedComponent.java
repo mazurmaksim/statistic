@@ -22,18 +22,13 @@ public class FeedComponent {
     @JoinColumn(name = "feed_composition_id", nullable = false)
     private FeedComposition feedComposition;
     @Column(name = "name", nullable = false)
-    private String name;
+    private String componentName;
     @Column(name = "quantity", nullable = false)
     private String quantity;
 
     public FeedComponent() {
     }
 
-    public FeedComponent(String name, String quantity, FeedComposition feedComposition) {
-        this.name = name;
-        this.quantity = quantity;
-        this.feedComposition = feedComposition;
-    }
 
     public UUID getId() {
         return id;
@@ -53,12 +48,12 @@ public class FeedComponent {
         this.feedComposition = feedComposition;
     }
 
-    public String getName() {
-        return name;
+    public String getComponentName() {
+        return componentName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
     }
 
     public String getQuantity() {

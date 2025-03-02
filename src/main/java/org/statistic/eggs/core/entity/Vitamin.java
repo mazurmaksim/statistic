@@ -19,20 +19,10 @@ import java.util.UUID;
 public class Vitamin {
 
     private UUID id;
-
     private FeedComposition feedComposition;
-
-    private String name;
-
+    private String vitaminName;
     private String quantity;
-
     public Vitamin() {}
-
-    public Vitamin(String name, String quantity, FeedComposition feedComposition) {
-        this.name = name;
-        this.quantity = quantity;
-        this.feedComposition = feedComposition;
-    }
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -55,13 +45,13 @@ public class Vitamin {
         this.feedComposition = feedComposition;
     }
 
-    @Column(nullable = false)
-    public String getName() {
-        return name;
+    @Column(nullable = false, name = "name")
+    public String getVitaminName() {
+        return vitaminName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setVitaminName(String vitaminName) {
+        this.vitaminName = vitaminName;
     }
 
     @Column(nullable = false)
