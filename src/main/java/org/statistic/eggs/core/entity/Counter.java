@@ -2,10 +2,14 @@ package org.statistic.eggs.core.entity;
 
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -21,6 +25,7 @@ public class Counter implements Comparable<Counter> {
     private UUID id;
     private LocalDate dateTime;
     private Integer amount;
+    private FeedComposition feedComposition;
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -36,6 +41,16 @@ public class Counter implements Comparable<Counter> {
     @Column(name = "saved_at")
     public LocalDate getDateTime() {
         return dateTime;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "feed_composition_id", nullable = false)
+    public FeedComposition getFeedComposition() {
+        return feedComposition;
+    }
+
+    public void setFeedComposition(FeedComposition feedComposition) {
+        this.feedComposition = feedComposition;
     }
 
     public void setDateTime(LocalDate dateTime) {

@@ -20,14 +20,11 @@ import java.util.UUID;
 public class FeedComposition {
 
     private UUID id;
-
     private String name;
-
     private String date;
-
     private List<FeedComponent> components;
-
     private List<Vitamin> vitamins;
+    private List<Counter> counter;
 
     public FeedComposition() {
     }
@@ -64,6 +61,16 @@ public class FeedComposition {
     @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<FeedComponent> getComponents() {
         return components;
+    }
+
+    @OneToMany(mappedBy = "feedComposition", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Counter> getCounter() {
+        return counter;
+    }
+
+
+    public void setCounter(List<Counter> counter) {
+        this.counter = counter;
     }
 
     public void setComponents(List<FeedComponent> components) {

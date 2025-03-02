@@ -47,6 +47,11 @@
                                                 <PropertyValueFactory property="amount" />
                                             </cellValueFactory>
                                         </TableColumn>
+                                        <TableColumn fx:id="foodPlan" prefWidth="200" text="Food Plan Name">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="name" />
+                                            </cellValueFactory>
+                                        </TableColumn>
                                     </columns>
                                 </TableView>
                             </content>
@@ -59,6 +64,7 @@
                                     <Button onAction="#onManualSaveButtonClick" text="Add" />
                                     <Button onAction="#onUpdate" text="Update" />
                                     <Button onAction="#onDelete" text="Delete" />
+                                    <ChoiceBox fx:id="foodPlanChoice" prefWidth="150.0" />
                                 </HBox>
                             </content>
                         </TitledPane>

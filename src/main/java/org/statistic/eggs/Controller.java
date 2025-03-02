@@ -1,5 +1,6 @@
 package org.statistic.eggs;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,7 +10,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
@@ -23,6 +23,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
+import org.statistic.eggs.core.entity.FeedComposition;
 import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
@@ -52,6 +53,10 @@ public class Controller {
     @FXML
     public Slider historySlider;
     @FXML
+    public ChoiceBox<String> foodPlanChoice;
+    @FXML
+    public TableColumn<Counter, String> foodPlan;
+    @FXML
     private TreeView<String> historyTree;
     @FXML
     private LineChart<String, Number> lineChart;
@@ -80,9 +85,14 @@ public class Controller {
             populateStatisticTable();
             historyTree.setOnMouseClicked(this::handleTreeClick);
             manipulateSlider();
+            populateFoodPlan();
         } catch (Exception e) {
             ErrorHandler.showErrorDialog(e);
         }
+    }
+
+    private void populateFoodPlan() {
+            foodPlanChoice.setValue("– Select Food Plan –");
     }
 
     private void populateCharts() {
@@ -112,6 +122,11 @@ public class Controller {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         dayColumn.setCellValueFactory(new PropertyValueFactory<>("dateTime"));
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        foodPlan.setCellValueFactory(cellData -> {
+            Counter counter = cellData.getValue();
+            FeedComposition feedComposition = counter.getFeedComposition();
+            return new SimpleStringProperty(feedComposition != null ? feedComposition.getName() : "N/A");
+        });
     }
 
     private void populateOptions() {
@@ -206,11 +221,7 @@ public class Controller {
             tableView.setItems(data);
             lineChart.getData().add(series);
 
-            for (XYChart.Data<String, Number> toolTipData : series.getData()) {
-                Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
-                Tooltip.install(toolTipData.getNode(), tooltip);
-                toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
-            }
+            populateChartNodes(series, result);
         } catch (Exception e) {
             ErrorHandler.showErrorDialog(e);
         }
@@ -447,11 +458,7 @@ public class Controller {
         });
 
         historyChart.getData().add(series);
-        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
-            Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
-            Tooltip.install(toolTipData.getNode(), tooltip);
-            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
-        }
+        populateChartNodes(series, result);
     }
 
     @FXML
@@ -473,10 +480,9 @@ public class Controller {
 
             List<Counter> result = StatisticDao.getAllData();
             Collections.sort(result);
-            List<Counter> filteredData = result.stream()
+            List<Counter> filteredData = new ArrayList<>(result.stream()
                     .skip(Math.max(0, result.size() - counter))
-                    .toList();
-
+                    .toList());
             filteredData.forEach(counter -> {
                     series.getData().add(new XYChart.Data<>(
                             DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + " (" + counter.getDateTime() + ")",
@@ -487,12 +493,28 @@ public class Controller {
             tableView.setItems(data);
             lineChart.getData().add(series);
 
-            for (XYChart.Data<String, Number> toolTipData : series.getData()) {
-                Tooltip tooltip = new Tooltip("Amount: " + toolTipData.getYValue());
-                Tooltip.install(toolTipData.getNode(), tooltip);
-                toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
-            }
+            populateChartNodes(series, result);
+
         });
+    }
+
+    private static void populateChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
+        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+            Optional<Counter> counterOptional = result.stream()
+                    .filter(c -> c.getAmount().equals(toolTipData.getYValue()))
+                    .findFirst();
+
+            String tooltipText = "Amount: " + toolTipData.getYValue();
+
+            if (counterOptional.isPresent() && counterOptional.get().getFeedComposition() != null) {
+                FeedComposition feedComposition = counterOptional.get().getFeedComposition();
+                tooltipText += "\nFeed: " + feedComposition.getName() + "\nDate: " + feedComposition.getDate();
+            }
+
+            Tooltip tooltip = new Tooltip(tooltipText);
+            Tooltip.install(toolTipData.getNode(), tooltip);
+            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+        }
     }
 
 }
