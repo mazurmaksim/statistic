@@ -29,9 +29,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
-import org.statistic.eggs.core.entity.FeedComponent;
 import org.statistic.eggs.core.entity.FeedComposition;
-import org.statistic.eggs.core.entity.Vitamin;
 import org.statistic.eggs.core.persistence.Persistence;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
@@ -94,14 +92,9 @@ public class Controller {
             populateStatisticTable();
             historyTree.setOnMouseClicked(this::handleTreeClick);
             manipulateSlider();
-            populateFoodPlan();
         } catch (Exception e) {
             ErrorHandler.showErrorDialog(e);
         }
-    }
-
-    private void populateFoodPlan() {
-            foodPlanChoice.setValue("– Select Food Plan –");
     }
 
     private void populateCharts() {
@@ -211,8 +204,18 @@ public class Controller {
             lineChart.getData().clear();
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(String.valueOf(LocalDateTime.now().getYear()));
-            List<Counter> result = StatisticDao.getAllData();
+            List<Counter> result = StatisticDao.getStatisticData();
             result.sort(Comparator.comparing(Counter::getDateTime));
+
+            List<FeedComposition> feedCompositions = StatisticDao.getFeedComposition();
+            foodPlanChoice.getItems().clear();
+            feedCompositions.forEach(f->{
+                foodPlanChoice.getItems().add(f.getName());
+                if(f.isActive()) {
+                    foodPlanChoice.setValue(f.getName());
+                }
+            });
+
             historySlider.setMax(result.size() - counter);
             addHistoryRecord(result);
             if (statisticView == StatisticView.YEARLY) {
@@ -337,12 +340,13 @@ public class Controller {
 
             int amount = Integer.parseInt(addManually.getText());
             LocalDate date = datePicker.getValue();
+            String foodCompositionName = foodPlanChoice.getValue();
 
             if (date == null) {
                 showError("Please select a date.");
                 return;
             }
-
+            FeedComposition feedComposition = StatisticDao.getFeedCompositionByName(foodCompositionName);
             for (Counter counter : allData) {
                 if (date.equals(counter.getDateTime())) {
                     showError("You trying  insert already existing record for date: " + date
@@ -360,7 +364,7 @@ public class Controller {
             Counter entry = new Counter();
             entry.setAmount(amount);
             entry.setDateTime(date);
-
+            entry.setFeedComposition(feedComposition);
             Persistence<Counter> saver = new Persistence<>();
             saver.persist(entry);
 
@@ -498,7 +502,7 @@ public class Controller {
         historyChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(String.valueOf(LocalDateTime.now().getYear()));
-        List<Counter> allData = StatisticDao.getAllData();
+        List<Counter> allData = StatisticDao.getStatisticData();
 
         List<Counter> result = allData.stream()
                 .filter(f -> f.getDateTime().getYear() == year && f.getDateTime().getMonth().equals(month))
@@ -533,7 +537,7 @@ public class Controller {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(String.valueOf(LocalDateTime.now().getYear()));
 
-            List<Counter> result = StatisticDao.getAllData();
+            List<Counter> result = StatisticDao.getStatisticData();
             Collections.sort(result);
             List<Counter> filteredData = new ArrayList<>(result.stream()
                     .skip(Math.max(0, result.size() - counter))

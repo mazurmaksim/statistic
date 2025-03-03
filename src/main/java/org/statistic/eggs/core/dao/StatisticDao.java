@@ -33,7 +33,7 @@ public class StatisticDao {
         }
     }
 
-    public static List<Counter> getAllData() {
+    public static List<Counter> getStatisticData() {
         List<Counter> result = new ArrayList<>();
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -110,5 +110,35 @@ public class StatisticDao {
             }
             ErrorHandler.showErrorDialog(e);
         }
+    }
+
+    public static List<FeedComposition> getFeedComposition() {
+        List<FeedComposition> result = new ArrayList<>();
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            result = session.createQuery("from FeedComposition", FeedComposition.class).list();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            ErrorHandler.showErrorDialog(e);
+        }
+        return result;
+    }
+
+    public static FeedComposition getFeedCompositionByName(String name) {
+        FeedComposition result = null;
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            result = session.createQuery("from FeedComposition where name=:name", FeedComposition.class)
+                    .setParameter("name", name)
+                    .getSingleResult();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            ErrorHandler.showErrorDialog(e);
+        }
+        return result;
     }
 }

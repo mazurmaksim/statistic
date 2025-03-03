@@ -26,6 +26,7 @@ public class FeedComposition {
     private List<FeedComponent> components;
     private List<Vitamin> vitamins;
     private List<Counter> counter;
+    private boolean active;
 
     public FeedComposition() {
     }
@@ -85,6 +86,15 @@ public class FeedComposition {
 
     public void setVitamins(List<Vitamin> vitamins) {
         this.vitamins = vitamins;
+    }
+
+    @Column(name = "is_active")
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }
 
