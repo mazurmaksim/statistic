@@ -1,4 +1,4 @@
-package org.statistic.eggs;
+package org.statistic.eggs.controller;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -30,7 +30,10 @@ import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.core.forecast.WeatherParser;
+import org.statistic.eggs.core.forecast.WeatherResponse;
 import org.statistic.eggs.core.persistence.Persistence;
+import org.statistic.eggs.core.service.WeatherService;
 import org.statistic.eggs.core.views.DaysView;
 import org.statistic.eggs.core.views.StatisticView;
 import org.statistic.eggs.dialogs.FeedCompositionDialog;
@@ -92,8 +95,19 @@ public class Controller {
             populateStatisticTable();
             historyTree.setOnMouseClicked(this::handleTreeClick);
             manipulateSlider();
+            parseWeatherResponse();
         } catch (Exception e) {
             ErrorHandler.showErrorDialog(e);
+        }
+    }
+
+    private void parseWeatherResponse() {
+        WeatherParser parser = new WeatherParser();
+        WeatherResponse weatherResponse = parser.parseWeatherJson(WeatherService.getWeather());
+        if (weatherResponse != null) {
+            System.out.println("City: " + weatherResponse.getName());
+            System.out.println("Temperature: " + weatherResponse.getMain().getTemp() + "°C");
+            System.out.println("Weather: " + weatherResponse.getWeather()[0].getDescription());
         }
     }
 
@@ -573,6 +587,25 @@ public class Controller {
             Tooltip tooltip = new Tooltip(tooltipText);
             Tooltip.install(toolTipData.getNode(), tooltip);
             toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+        }
+    }
+
+    @FXML
+    private void showWeatherSettings() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/statistic/eggs/weatherSettings.fxml"));
+            Parent root = loader.load();
+
+            WeatherSettingsController controller = loader.getController();
+//            controller.setFoodComposition(feedComposition);
+
+            Stage stage = new Stage();
+            stage.setTitle("Weather Forecast Settings");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

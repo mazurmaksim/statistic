@@ -6,7 +6,7 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="800" prefWidth="1000" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.statistic.eggs.Controller">
+<VBox prefHeight="800" prefWidth="1000" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.statistic.eggs.controller.Controller">
     <padding>
         <Insets bottom="20.0" left="5.0" right="5.0" />
     </padding>
@@ -19,6 +19,11 @@
                     <MenuItem text="Export to pdf" />
                     <SeparatorMenuItem />
                     <MenuItem text="Exit" />
+                </items>
+            </Menu>
+            <Menu text="Settings">
+                <items>
+                    <MenuItem onAction="#showWeatherSettings" text="Weather" />
                 </items>
             </Menu>
             <Menu text="About">
@@ -52,6 +57,11 @@
                                                 <PropertyValueFactory property="name" />
                                             </cellValueFactory>
                                         </TableColumn>
+<!--                                        <TableColumn fx:id="weather" prefWidth="200" text="Weather">-->
+<!--                                            <cellValueFactory>-->
+<!--                                                <PropertyValueFactory property="weather" />-->
+<!--                                            </cellValueFactory>-->
+<!--                                        </TableColumn>-->
                                     </columns>
                                 </TableView>
                             </content>

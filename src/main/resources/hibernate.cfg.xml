@@ -25,6 +25,9 @@
         <mapping class="org.statistic.eggs.core.entity.FeedComponent"/>
         <mapping class="org.statistic.eggs.core.entity.FeedComposition"/>
         <mapping class="org.statistic.eggs.core.entity.Vitamin"/>
+        <mapping class="org.statistic.eggs.core.entity.Settings"/>
+        <mapping class="org.statistic.eggs.core.entity.WeatherSettings"/>
+
 
     </session-factory>
 </hibernate-configuration>

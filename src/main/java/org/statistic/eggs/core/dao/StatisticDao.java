@@ -8,6 +8,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.core.entity.Settings;
 import org.statistic.eggs.handler.ErrorHandler;
 
 import java.time.LocalDate;
@@ -134,6 +135,34 @@ public class StatisticDao {
             result = session.createQuery("from FeedComposition where name=:name", FeedComposition.class)
                     .setParameter("name", name)
                     .getSingleResult();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            ErrorHandler.showErrorDialog(e);
+        }
+        return result;
+    }
+
+    public static void saveWeatherSettings(Settings settings) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.merge(settings);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            ErrorHandler.showErrorDialog(e);
+        }
+    }
+
+    public static List<Settings> getAllSettings() {
+        List<Settings> result = null;
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            result = session.createQuery("from Settings", Settings.class).list();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();

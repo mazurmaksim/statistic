@@ -110,7 +110,6 @@ public class FeedCompositionDialog {
         container.getChildren().add(grid);
     }
 
-    //    TODO: Implement saving to the database
     private void saveMixturedComposition(TextField mixtureNameField, DatePicker datePicker) {
         String mixtureName = mixtureNameField.getText();
         String date = (datePicker.getValue() != null) ? datePicker.getValue().toString() : "No date";

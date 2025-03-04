@@ -30,3 +30,16 @@ CREATE TABLE public.day_statistic (
 	id uuid NOT NULL,
 	CONSTRAINT day_statistic_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE public.app_settings (
+    id UUID PRIMARY KEY
+);
+
+CREATE TABLE public.weather_settings (
+    id UUID PRIMARY KEY,
+    weather_key VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    app_setting_id UUID NOT NULL,
+    FOREIGN KEY (app_setting_id) REFERENCES settings(id) ON DELETE CASCADE
+);
+

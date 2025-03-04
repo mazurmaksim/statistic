@@ -7,8 +7,11 @@ module org.example.demo {
 
     requires java.naming;
 
-    requires java.sql;
     requires org.hibernate.orm.core;
+    requires com.fasterxml.jackson.databind;
+    requires jdk.httpserver;
+    requires java.net.http;
+    exports org.statistic.eggs.core.forecast;
     opens org.statistic.eggs.core.entity to org.hibernate.orm.core;
     exports org.statistic.eggs.core.entity;
     opens org.statistic.eggs to javafx.fxml;
@@ -17,4 +20,6 @@ module org.example.demo {
     opens org.statistic.eggs.core.views to javafx.fxml;
     exports org.statistic.eggs.dialogs;
     opens org.statistic.eggs.dialogs to javafx.fxml;
+    exports org.statistic.eggs.controller;
+    opens org.statistic.eggs.controller to javafx.fxml;
 }
