@@ -29,7 +29,7 @@ public class StatisticDao {
                     .buildSessionFactory();
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(registry);
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not connect to the database",e);
             throw new ExceptionInInitializerError("SessionFactory creation failed: " + e.getMessage());
         }
     }
@@ -43,7 +43,7 @@ public class StatisticDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not load statistic data from database",e);
         }
         return result;
     }
@@ -55,7 +55,7 @@ public class StatisticDao {
                     .setParameter("date", date)
                     .list();
         } catch (Exception e) {
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not get statistic by date" ,e);
         }
         return result;
     }
@@ -76,7 +76,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();  // Тільки якщо транзакція активна
             }
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not delete day statistic for date {} " + date.toString(), e);
         }
     }
 
@@ -91,7 +91,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not update statistic for date " + selectedEntry.getDateTime().toString() ,e);
         }
     }
 
@@ -109,7 +109,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Error happened while saving to the database feed composition", e);
         }
     }
 
@@ -122,7 +122,7 @@ public class StatisticDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Error happened while getting composition", e);
         }
         return result;
     }
@@ -138,7 +138,7 @@ public class StatisticDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not load composition from database", e);
         }
         return result;
     }
@@ -153,7 +153,7 @@ public class StatisticDao {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not save weather settings to the database" ,e);
         }
     }
 
@@ -166,7 +166,7 @@ public class StatisticDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not load settings from database" ,e);
         }
         return result;
     }

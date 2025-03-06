@@ -22,7 +22,7 @@ public class Persistence <T> {
                     .buildSessionFactory();
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(registry);
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Error happened while connection to the database, connection failed" ,e);
             throw new ExceptionInInitializerError("SessionFactory creation failed: " + e.getMessage());
         }
     }
@@ -35,7 +35,7 @@ public class Persistence <T> {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-           ErrorHandler.showErrorDialog(e);
+           ErrorHandler.showErrorDialog("Persisting error. Database Error" ,e);
         }
     }
 }

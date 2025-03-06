@@ -8,10 +8,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class ErrorHandler {
-    public static void showErrorDialog(Exception ex) {
+    public static void showErrorDialog(String message, Exception ex) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setHeaderText("Happened Error:");
+        alert.setHeaderText("Happened Error:" + message);
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

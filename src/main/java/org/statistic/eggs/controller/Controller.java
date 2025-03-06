@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
 import org.statistic.eggs.core.entity.Counter;
 import org.statistic.eggs.core.entity.FeedComposition;
+import org.statistic.eggs.core.entity.WeatherForecast;
 import org.statistic.eggs.core.forecast.WeatherParser;
 import org.statistic.eggs.core.forecast.WeatherResponse;
 import org.statistic.eggs.core.persistence.Persistence;
@@ -95,20 +96,19 @@ public class Controller {
             populateStatisticTable();
             historyTree.setOnMouseClicked(this::handleTreeClick);
             manipulateSlider();
-            parseWeatherResponse();
         } catch (Exception e) {
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Error happened while starting application",e);
         }
     }
 
-    private void parseWeatherResponse() {
-        WeatherParser parser = new WeatherParser();
-        WeatherResponse weatherResponse = parser.parseWeatherJson(WeatherService.getWeather());
-        if (weatherResponse != null) {
-            System.out.println("City: " + weatherResponse.getName());
-            System.out.println("Temperature: " + weatherResponse.getMain().getTemp() + "°C");
-            System.out.println("Weather: " + weatherResponse.getWeather()[0].getDescription());
-        }
+    private WeatherResponse getWeatherForecast() {
+       try {
+           WeatherParser parser = new WeatherParser();
+           return parser.parseWeatherJson(WeatherService.getWeather());
+       } catch (Exception ex) {
+           ErrorHandler.showErrorDialog("Could not get weather forecast from API", ex);
+       }
+       return null;
     }
 
     private void populateCharts() {
@@ -223,9 +223,9 @@ public class Controller {
 
             List<FeedComposition> feedCompositions = StatisticDao.getFeedComposition();
             foodPlanChoice.getItems().clear();
-            feedCompositions.forEach(f->{
+            feedCompositions.forEach(f -> {
                 foodPlanChoice.getItems().add(f.getName());
-                if(f.isActive()) {
+                if (f.isActive()) {
                     foodPlanChoice.setValue(f.getName());
                 }
             });
@@ -239,6 +239,7 @@ public class Controller {
                 sortedMonthStatistic.forEach((year, amount) -> {
                     series.getData().add(new XYChart.Data<>(year.toString(), amount));
                 });
+                lineChart.getData().add(series);
             }
 
             if (statisticView == StatisticView.MONTHLY) {
@@ -249,6 +250,7 @@ public class Controller {
                 sortedMonthStatistic.forEach((month, amount) -> {
                     series.getData().add(new XYChart.Data<>(month.name(), amount));
                 });
+                lineChart.getData().add(series);
             }
 
             if (statisticView == StatisticView.WEEKS) {
@@ -271,31 +273,21 @@ public class Controller {
                         series.getData().add(new XYChart.Data<>("Week " + (week), amount));
                     }
                 });
+                lineChart.getData().add(series);
             }
 
-            result.stream()
-                    .skip(Math.max(0, result.size() - counter)).forEach(counter -> {
-                        if (statisticView == StatisticView.DAILY) {
-                            lineChart.getData().clear();
-                            historySlider.setVisible(true);
-//                if (counter.getDateTime().getMonth().equals(LocalDate.now().getMonth()) && counter.getDateTime().getYear() == LocalDate.now().getYear()) {
-                            if (counter.getDateTime().getYear() == LocalDate.now().getYear()) {
-                                series.getData().add(new XYChart.Data<>(DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + "("
-                                        + counter.getDateTime() + ")"
-                                        , counter.getAmount()));
-                            }
-                        }
-                    });
+            if (statisticView == StatisticView.DAILY) {
+                showDailyStEggsWeather(result);
+            }
 
             ObservableList<Counter> data = FXCollections.observableArrayList();
             result.sort(Collections.reverseOrder());
             data.addAll(result);
             tableView.setItems(data);
-            lineChart.getData().add(series);
 
-            populateChartNodes(series, result);
+            populateEggAmountChartNodes(series, result);
         } catch (Exception e) {
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not load statistic", e);
         }
     }
 
@@ -355,6 +347,17 @@ public class Controller {
             int amount = Integer.parseInt(addManually.getText());
             LocalDate date = datePicker.getValue();
             String foodCompositionName = foodPlanChoice.getValue();
+            Counter entry = new Counter();
+
+            WeatherResponse weatherResponse = getWeatherForecast();
+            WeatherForecast weatherForecast = new WeatherForecast();
+
+            if(weatherResponse !=null) {
+                weatherForecast.setHumidity(weatherResponse.getMain().getHumidity());
+                weatherForecast.setTemperature(weatherResponse.getMain().getTemp());
+                weatherForecast.setWindSpeed(weatherResponse.getWind().getSpeed());
+                weatherForecast.setRetrievedSuccessfully(true);
+            }
 
             if (date == null) {
                 showError("Please select a date.");
@@ -362,6 +365,9 @@ public class Controller {
             }
             FeedComposition feedComposition = StatisticDao.getFeedCompositionByName(foodCompositionName);
             for (Counter counter : allData) {
+                if(counter.getWeatherForecast() == null) {
+                    entry.setWeatherForecast(weatherForecast);
+                }
                 if (date.equals(counter.getDateTime())) {
                     showError("You trying  insert already existing record for date: " + date
                     + System.lineSeparator() +
@@ -375,11 +381,12 @@ public class Controller {
                 return;
             }
 
-            Counter entry = new Counter();
             entry.setAmount(amount);
             entry.setDateTime(date);
             entry.setFeedComposition(feedComposition);
             Persistence<Counter> saver = new Persistence<>();
+            weatherForecast.setDayStatistic(entry);
+
             saver.persist(entry);
 
             addManually.clear();
@@ -512,6 +519,7 @@ public class Controller {
         }
     }
 
+//    TODO: add weather statistic
     private void showStatisticForMonth(int year, Month month) {
         historyChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
@@ -531,7 +539,7 @@ public class Controller {
         });
 
         historyChart.getData().add(series);
-        populateChartNodes(series, result);
+        populateEggAmountChartNodes(series, result);
     }
 
     @FXML
@@ -556,22 +564,48 @@ public class Controller {
             List<Counter> filteredData = new ArrayList<>(result.stream()
                     .skip(Math.max(0, result.size() - counter))
                     .toList());
-            filteredData.forEach(counter -> {
-                    series.getData().add(new XYChart.Data<>(
-                            DaysView.getName(counter.getDateTime().getDayOfWeek().name()) + " (" + counter.getDateTime() + ")",
-                            counter.getAmount()));
-            });
+
+            showDailyStEggsWeather(result);
 
             ObservableList<Counter> data = FXCollections.observableArrayList(filteredData);
             tableView.setItems(data);
-            lineChart.getData().add(series);
 
-            populateChartNodes(series, result);
-
+            populateEggAmountChartNodes(series, result);
         });
     }
 
-    private static void populateChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
+    private void showDailyStEggsWeather(List<Counter> result) {
+        XYChart.Series<String, Number> eggSeries = new XYChart.Series<>();
+        eggSeries.setName("Кількість яєць");
+
+        XYChart.Series<String, Number> tempSeries = new XYChart.Series<>();
+        tempSeries.setName("Температура (°C)");
+
+        result.stream()
+                .skip(Math.max(0, result.size() - counter))
+                .forEach(stat -> {
+                        lineChart.getData().clear();
+                        if (stat.getDateTime().getYear() == LocalDate.now().getYear()) {
+                            // Get the date in the required format
+                            String dateLabel = DaysView.getName(stat.getDateTime().getDayOfWeek().name()) +
+                                    "(" + stat.getDateTime() + ")";
+
+                            // Adding data on eggs
+                            eggSeries.getData().add(new XYChart.Data<>(dateLabel, stat.getAmount()));
+
+                            // Get the temperature for this date (if available)
+                            WeatherForecast weather = stat.getWeatherForecast();
+                            if(weather !=null) {
+                                tempSeries.getData().add(new XYChart.Data<>(dateLabel, weather.getTemperature()));
+                            }
+                        }
+                        lineChart.getData().addAll(eggSeries, tempSeries);
+                        populateEggAmountChartNodes(eggSeries, result);
+                        populateWeatherChartNodes(tempSeries, result);
+                });
+    }
+
+    private static void populateEggAmountChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
         for (XYChart.Data<String, Number> toolTipData : series.getData()) {
             Optional<Counter> counterOptional = result.stream()
                     .filter(c -> c.getAmount().equals(toolTipData.getYValue()))
@@ -582,6 +616,25 @@ public class Controller {
             if (counterOptional.isPresent() && counterOptional.get().getFeedComposition() != null) {
                 FeedComposition feedComposition = counterOptional.get().getFeedComposition();
                 tooltipText += "\nFeed: " + feedComposition.getName() + "\nDate: " + feedComposition.getDate();
+            }
+
+            Tooltip tooltip = new Tooltip(tooltipText);
+            Tooltip.install(toolTipData.getNode(), tooltip);
+            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+        }
+    }
+
+  private static void populateWeatherChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
+        for (XYChart.Data<String, Number> toolTipData : series.getData()) {
+            Optional<Counter> weatherOptional = result.stream()
+                    .filter(c -> c.getWeatherForecast()!= null && c.getWeatherForecast().getTemperature().equals(toolTipData.getYValue()))
+                    .findFirst();
+
+            String tooltipText = "Температура °C " + toolTipData.getYValue();
+
+            if (weatherOptional.isPresent() && weatherOptional.get().getWeatherForecast() != null) {
+                WeatherForecast weatherForecast = weatherOptional.get().getWeatherForecast();
+                tooltipText += "\nВологість повітря: " + weatherForecast.getHumidity() + "\nШвидкість вітру: " + weatherForecast.getWindSpeed();
             }
 
             Tooltip tooltip = new Tooltip(tooltipText);

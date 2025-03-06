@@ -40,7 +40,7 @@ public class WeatherService {
             }
 
         } catch (Exception e) {
-            ErrorHandler.showErrorDialog(e);
+            ErrorHandler.showErrorDialog("Could not reach weather API",e);
             return null;
         }
     }
