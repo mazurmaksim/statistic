@@ -22,9 +22,8 @@
                 </items>
             </Menu>
             <Menu text="Settings">
-                <items>
-                    <MenuItem onAction="#showWeatherSettings" text="Weather" />
-                </items>
+                <MenuItem onAction="#showWeatherSettings" text="Weather"/>
+                <MenuItem onAction="#showChickenSettings" text="Chicken Amount"/>
             </Menu>
             <Menu text="About">
                 <items>
@@ -52,16 +51,21 @@
                                                 <PropertyValueFactory property="amount" />
                                             </cellValueFactory>
                                         </TableColumn>
+                                        <TableColumn fx:id="chkAmount" prefWidth="200" text="Chicken amount">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="weather" />
+                                            </cellValueFactory>
+                                        </TableColumn>
                                         <TableColumn fx:id="foodPlan" prefWidth="200" text="Food Plan Name">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="name" />
                                             </cellValueFactory>
                                         </TableColumn>
-<!--                                        <TableColumn fx:id="weather" prefWidth="200" text="Weather">-->
-<!--                                            <cellValueFactory>-->
-<!--                                                <PropertyValueFactory property="weather" />-->
-<!--                                            </cellValueFactory>-->
-<!--                                        </TableColumn>-->
+                                        <TableColumn fx:id="weather" prefWidth="200" text="Weather">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="weather" />
+                                            </cellValueFactory>
+                                        </TableColumn>
                                     </columns>
                                 </TableView>
                             </content>

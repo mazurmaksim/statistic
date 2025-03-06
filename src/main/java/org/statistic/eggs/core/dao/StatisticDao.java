@@ -143,7 +143,7 @@ public class StatisticDao {
         return result;
     }
 
-    public static void saveWeatherSettings(Settings settings) {
+    public static void saveSettings(Settings settings) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();

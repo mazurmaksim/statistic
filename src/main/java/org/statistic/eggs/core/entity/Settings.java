@@ -22,6 +22,17 @@ public class Settings {
     @OneToOne(mappedBy = "settings", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private WeatherSettings weatherSettings;
 
+    @OneToOne(mappedBy = "settings", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private ChickensSettings chickenSettings;
+
+    public ChickensSettings getChickenSettingsSettings() {
+        return chickenSettings;
+    }
+
+    public void setChickenSettings(ChickensSettings chickenSettings) {
+        this.chickenSettings = chickenSettings;
+    }
+
     public UUID getId() {
         return id;
     }

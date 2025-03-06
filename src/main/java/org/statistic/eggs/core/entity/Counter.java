@@ -29,6 +29,7 @@ public class Counter implements Comparable<Counter> {
     private Integer amount;
     private FeedComposition feedComposition;
     private WeatherForecast weatherForecast;
+    private Chickens chickens;
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -40,6 +41,15 @@ public class Counter implements Comparable<Counter> {
     @OneToOne(mappedBy = "dayStatistic", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public WeatherForecast getWeatherForecast() {
         return weatherForecast;
+    }
+
+    @OneToOne(mappedBy = "dayStatistic", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    public Chickens getChickens() {
+        return chickens;
+    }
+
+    public void setChickens(Chickens chickens) {
+        this.chickens = chickens;
     }
 
     public void setWeatherForecast(WeatherForecast weatherForecast) {

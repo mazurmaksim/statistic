@@ -43,3 +43,9 @@ CREATE TABLE public.weather_settings (
     FOREIGN KEY (app_setting_id) REFERENCES settings(id) ON DELETE CASCADE
 );
 
+CREATE TABLE public.chickens_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    chicken_amount INT NOT NULL,
+    app_setting_id UUID NOT NULL,
+    CONSTRAINT fk_chickens_settings_settings FOREIGN KEY (app_setting_id) REFERENCES public.settings (id) ON DELETE CASCADE
+);

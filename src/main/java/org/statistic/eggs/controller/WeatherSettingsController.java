@@ -20,7 +20,7 @@ public class WeatherSettingsController {
     private TextField apiKeyTextField;
 
     @FXML
-    private void saveSettings() {
+    private void saveWeatherSettings() {
         String city = cityComboBox.getValue();
         String apiKey = apiKeyTextField.getText();
 
@@ -30,13 +30,13 @@ public class WeatherSettingsController {
         }
 
         List<Settings> settings = StatisticDao.getAllSettings();
-        Settings newSettings = null;
+
         if(settings.isEmpty()) {
-            populateWeatherSettings(city, apiKey, newSettings);
+            populateWeatherSettings(city, apiKey);
         } else {
             for (Settings s : settings) {
                 if (s.getWeatherSettings() == null) {
-                    populateWeatherSettings(city, apiKey, newSettings);
+                    populateWeatherSettings(city, apiKey);
                 }
             }
         }
@@ -46,15 +46,15 @@ public class WeatherSettingsController {
         stage.close();
     }
 
-    private static void populateWeatherSettings(String city, String apiKey, Settings newSettings) {
-        newSettings = new Settings();
+    private static void populateWeatherSettings(String city, String apiKey) {
+        Settings newSettings = new Settings();
         WeatherSettings weatherSettings = new WeatherSettings();
         weatherSettings.setCity(city);
         weatherSettings.setApiKey(apiKey);
         weatherSettings.setSettings(newSettings);
 
         newSettings.setWeatherSettings(weatherSettings);
-        StatisticDao.saveWeatherSettings(newSettings);
+        StatisticDao.saveSettings(newSettings);
     }
 
     @FXML

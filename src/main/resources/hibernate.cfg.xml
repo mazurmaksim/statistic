@@ -28,6 +28,8 @@
         <mapping class="org.statistic.eggs.core.entity.Settings"/>
         <mapping class="org.statistic.eggs.core.entity.WeatherSettings"/>
         <mapping class="org.statistic.eggs.core.entity.WeatherForecast"/>
+        <mapping class="org.statistic.eggs.core.entity.ChickensSettings"/>
+        <mapping class="org.statistic.eggs.core.entity.Chickens"/>
 
 
     </session-factory>

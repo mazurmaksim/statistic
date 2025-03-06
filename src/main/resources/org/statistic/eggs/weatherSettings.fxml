@@ -20,6 +20,6 @@
     <Label text="API-ключ OpenWeatherMap:" />
     <TextField fx:id="apiKeyTextField" prefWidth="300"/>
 
-    <Button text="Зберегти" onAction="#saveSettings"/>
+    <Button text="Зберегти" onAction="#saveWeatherSettings"/>
     <Button text="Закрити" />
 </VBox>

@@ -662,4 +662,23 @@ public class Controller {
         }
     }
 
+    @FXML
+    private void showChickenSettings() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/statistic/eggs/chickensSettings.fxml"));
+            Parent root = loader.load();
+
+            ChickensSettingController controller = loader.getController();
+//            controller.setFoodComposition(feedComposition);
+
+            Stage stage = new Stage();
+            stage.setTitle("Chickens Settings");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
