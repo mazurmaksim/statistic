@@ -608,7 +608,9 @@ public class Controller {
     private static void populateEggAmountChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
         for (XYChart.Data<String, Number> toolTipData : series.getData()) {
             Optional<Counter> counterOptional = result.stream()
-                    .filter(c -> c.getAmount().equals(toolTipData.getYValue()))
+                    .filter(c -> c.getAmount().equals(toolTipData.getYValue()) &&
+                            (DaysView.getName(c.getDateTime().getDayOfWeek().name()) + "(" + c.getDateTime().toString() + ")")
+                                    .equals(toolTipData.getXValue()))
                     .findFirst();
 
             String tooltipText = "Amount: " + toolTipData.getYValue();
@@ -618,11 +620,19 @@ public class Controller {
                 tooltipText += "\nFeed: " + feedComposition.getName() + "\nDate: " + feedComposition.getDate();
             }
 
-            Tooltip tooltip = new Tooltip(tooltipText);
-            Tooltip.install(toolTipData.getNode(), tooltip);
-            toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+            if (counterOptional.isPresent()) {
+//                if (counterOptional.get().getChickens() != null) {
+//                    tooltipText += System.lineSeparator() + "Chickens: " + counterOptional.get().getChickens()
+//                            .stream()
+//                            .filter(c-> c.getChDate().equals(counterOptional.get().getDateTime()));
+                }
+
+                Tooltip tooltip = new Tooltip(tooltipText);
+                Tooltip.install(toolTipData.getNode(), tooltip);
+                toolTipData.getNode().setStyle("-fx-background-color: orange, white;");
+            }
         }
-    }
+
 
   private static void populateWeatherChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
         for (XYChart.Data<String, Number> toolTipData : series.getData()) {
