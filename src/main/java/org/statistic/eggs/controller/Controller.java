@@ -216,6 +216,7 @@ public class Controller {
     private void showStatistic(StatisticView statisticView) {
         try {
             lineChart.getData().clear();
+            historySlider.setVisible(true);
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(String.valueOf(LocalDateTime.now().getYear()));
             List<Counter> result = StatisticDao.getStatisticData();
