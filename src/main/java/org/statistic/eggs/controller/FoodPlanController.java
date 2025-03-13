@@ -15,6 +15,9 @@ public class FoodPlanController {
     private Label foodPlanNameLabel;
 
     @FXML
+    private Label foodPlanDateLabel;
+
+    @FXML
     private TextArea feedDetailsTextArea;
 
     private FeedComposition feedComposition;
@@ -27,6 +30,7 @@ public class FoodPlanController {
     private void updateUI() {
         if (feedComposition != null) {
             foodPlanNameLabel.setText(feedComposition.getName());
+            foodPlanDateLabel.setText("Дата замішування: " + feedComposition.getDate());
 
             StringBuilder details = new StringBuilder();
             for (FeedComponent component : feedComposition.getComponents()) {

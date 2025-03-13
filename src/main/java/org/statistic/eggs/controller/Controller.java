@@ -90,6 +90,7 @@ public class Controller {
     @FXML
     private void initialize() {
         try {
+            showStatistic(StatisticView.DAILY);
             populateComponents();
             populateCharts();
             populateOptions();
@@ -308,27 +309,6 @@ public class Controller {
             }
         }
         return amountByMonth;
-    }
-
-    private static List<Counter> unitedAmountByDay(List<Counter> previous) {
-        Map<LocalDate, Integer> withoutDateDuplicates = calculateSameDateAmount(previous);
-
-        List<Counter> result = new ArrayList<>();
-        withoutDateDuplicates.forEach((localDate, integer) -> {
-            Counter counter = new Counter();
-            counter.setAmount(integer);
-            counter.setDateTime(localDate);
-            result.add(counter);
-        });
-        return result;
-    }
-
-    private static Map<LocalDate, Integer> calculateSameDateAmount(List<Counter> previous) {
-        Map<LocalDate, Integer> withoutDateDuplicates = new HashMap<>();
-        for (Counter counter : previous) {
-            withoutDateDuplicates.put(counter.getDateTime(), withoutDateDuplicates.getOrDefault(counter.getDateTime(), 0) + counter.getAmount());
-        }
-        return withoutDateDuplicates;
     }
 
     private static Map<Month, Integer> calculateAmountByMonth(List<Counter> previous) {
