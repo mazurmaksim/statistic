@@ -14,6 +14,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableCell;
@@ -25,6 +26,8 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.statistic.eggs.core.dao.StatisticDao;
@@ -54,6 +57,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.UUID;
 
 public class Controller {
 
@@ -67,6 +71,10 @@ public class Controller {
     public ChoiceBox<String> foodPlanChoice;
     @FXML
     public TableColumn<Counter, String> foodPlan;
+    @FXML
+    public Label maxAmountFeed;
+    @FXML
+    private Hyperlink feedLink;
     @FXML
     private TreeView<String> historyTree;
     @FXML
@@ -287,9 +295,54 @@ public class Controller {
             data.addAll(result);
             tableView.setItems(data);
 
+            averageEggAmountByFeed(result);
+
             populateEggAmountChartNodes(series, result);
         } catch (Exception e) {
             ErrorHandler.showErrorDialog("Could not load statistic", e);
+        }
+    }
+
+
+
+    private void averageEggAmountByFeed(List<Counter> result) {
+        record FeedCompositionWrapper(UUID id, String compositionName) {}
+        Map<FeedCompositionWrapper, Integer> feedBest = new HashMap<>();
+
+        for (Counter c : result) {
+            FeedCompositionWrapper key = new FeedCompositionWrapper(c.getFeedComposition().getId(), c.getFeedComposition().getName());
+            feedBest.put(key, feedBest.getOrDefault(key, 0) + c.getAmount());
+        }
+
+        Map.Entry<FeedCompositionWrapper, Integer> maxEntry = feedBest.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        if (maxEntry != null) {
+            FeedCompositionWrapper bestFeed = maxEntry.getKey();
+            int maxValue = maxEntry.getValue();
+
+            Text normalText = new Text("Корм з найбільшим показником яєць (");
+            Text boldText = new Text(bestFeed.compositionName());
+            Text closingText = new Text("): " + maxValue);
+
+            boldText.setStyle("-fx-font-weight: bold;");
+
+            TextFlow textFlow = new TextFlow(normalText, boldText, closingText);
+            maxAmountFeed.setGraphic(textFlow);
+
+            Optional<Counter> counterOpt = result.stream()
+                    .filter(r -> r.getFeedComposition().getId().equals(bestFeed.id()))
+                    .findFirst();
+
+            counterOpt.ifPresent(counter -> {
+                feedLink.setText("[Детальніше]");
+                feedLink.setOnAction(e -> showFoodPlanDetails(counter.getFeedComposition()));
+            });
+        } else {
+            maxAmountFeed.setText("Немає даних про корми");
+            feedLink.setText("");
         }
     }
 

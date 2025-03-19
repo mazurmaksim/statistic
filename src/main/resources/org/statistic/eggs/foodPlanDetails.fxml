@@ -12,7 +12,7 @@
     </padding>
 
     <Label fx:id="foodPlanNameLabel" text="Food Plan Name" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-    <Label fx:id="foodPlanDateLabel" text="Food Plan Name" style="-fx-font-size: 12px; -fx-font-weight: regular;" />
+    <Label fx:id="foodPlanDateLabel" text="Food Plan Name" style="-fx-font-size: 12px; -fx-font-weight: normal;" />
 
     <TextArea fx:id="feedDetailsTextArea" editable="false" wrapText="true" prefHeight="200" prefWidth="300"/>
 
