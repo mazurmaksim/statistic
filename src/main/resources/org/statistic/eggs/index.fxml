@@ -22,8 +22,8 @@
                 </items>
             </Menu>
             <Menu text="Settings">
-                <MenuItem onAction="#showWeatherSettings" text="Weather"/>
-                <MenuItem onAction="#showChickenSettings" text="Chicken Amount"/>
+                <MenuItem onAction="#showWeatherSettings" text="Weather" />
+                <MenuItem onAction="#showChickenSettings" text="Chicken Amount" />
             </Menu>
             <Menu text="About">
                 <items>
@@ -86,7 +86,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
                             <Button mnemonicParsing="false" onAction="#initialize" text="Refresh Data" />
-                            <Label fx:id="maxAmountFeed"/>
+                            <Label fx:id="maxAmountFeed" />
                             <Hyperlink fx:id="feedLink" text="" />
                         </HBox>
                         </TitledPane>
@@ -99,10 +99,60 @@
                                 <NumberAxis fx:id="yAxis" label="Amount of eggs" />
                             </yAxis>
                         </LineChart>
+                      <CheckBox fx:id="toggleGraphCheckbox" text="Hide Weather Graph" />
                     </VBox>
                 </content>
             </Tab>
-            <Tab text="Sales" />
+            <Tab text="Sales">
+            <content>
+                <VBox spacing="10.0">
+                    <TitledPane text="Sales statistic">
+                        <content>
+                            <TableView fx:id="tableView1" prefHeight="250.0" prefWidth="400.0">
+                                <columns>
+                                    <TableColumn fx:id="dayColumn1" prefWidth="200" text="Date">
+                                        <cellValueFactory>
+                                            <PropertyValueFactory property="date" />
+                                        </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn fx:id="amountColumn1" prefWidth="384.0" text="Name">
+                                        <cellValueFactory>
+                                            <PropertyValueFactory property="amount" />
+                                        </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn fx:id="chkAmount1" prefWidth="404.0" text="Amount of eggs">
+                                        <cellValueFactory>
+                                            <PropertyValueFactory property="weather" />
+                                        </cellValueFactory>
+                                    </TableColumn>
+                                </columns>
+                            </TableView>
+                        </content>
+                    </TitledPane>
+                    <TitledPane text="Sale">
+                        <content>
+                            <HBox alignment="BASELINE_LEFT" spacing="10">
+                                <DatePicker fx:id="datePicker1" prefWidth="101.0" />
+                                <TextField fx:id="addManually2" maxWidth="110" promptText="Name" />
+                                <TextField fx:id="addManually1" maxWidth="80" promptText="Enter amount" />
+                                <Button onAction="#onManualSaveButtonClick" text="Add" />
+                                <Button onAction="#onUpdate" text="Update" />
+
+                            </HBox>
+                        </content>
+                    </TitledPane>
+                    <Slider fx:id="historySlider1" prefWidth="776.0" />
+                    <LineChart fx:id="lineChart1" animated="false" title="Sales Statistic">
+                        <xAxis>
+                            <CategoryAxis fx:id="xAxis1" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="yAxis1" label="Amount of eggs" />
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+            </content>
+            </Tab>
             <Tab text="History">
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
