@@ -11,6 +11,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
@@ -91,6 +92,10 @@ public class Controller {
     private DatePicker datePicker;
     @FXML
     private MenuBar menuBar;
+    @FXML
+    private CheckBox toggleGraphCheckbox;
+
+    private XYChart.Series<String, Number> tempSeries;
 
     private boolean needRefresh = true;
     private int counter = 7;
@@ -105,9 +110,30 @@ public class Controller {
             populateStatisticTable();
             historyTree.setOnMouseClicked(this::handleTreeClick);
             manipulateSlider();
+            showHideWeatherGraph();
         } catch (Exception e) {
             ErrorHandler.showErrorDialog("Error happened while starting application",e);
         }
+    }
+
+    private void showHideWeatherGraph() {
+        toggleGraphCheckbox.setOnAction(event -> {
+            boolean isSelected = toggleGraphCheckbox.isSelected();
+
+            if (isSelected) {
+                for (XYChart.Series<String, Number> series : lineChart.getData()) {
+                    if ("Температура (°C)".equals(series.getName())) {
+                        tempSeries = series;
+                        lineChart.getData().remove(series);
+                        break;
+                    }
+                }
+            } else {
+                if (tempSeries != null && !lineChart.getData().contains(tempSeries)) {
+                    lineChart.getData().add(tempSeries);
+                }
+            }
+        });
     }
 
     private WeatherResponse getWeatherForecast() {
@@ -296,7 +322,6 @@ public class Controller {
             tableView.setItems(data);
 
             averageEggAmountByFeed(result);
-
             populateEggAmountChartNodes(series, result);
         } catch (Exception e) {
             ErrorHandler.showErrorDialog("Could not load statistic", e);
@@ -615,28 +640,29 @@ public class Controller {
         XYChart.Series<String, Number> tempSeries = new XYChart.Series<>();
         tempSeries.setName("Температура (°C)");
 
+        // Очистка перед додаванням нових даних (винесена за межі циклу)
+        lineChart.getData().clear();
+
         result.stream()
                 .skip(Math.max(0, result.size() - counter))
                 .forEach(stat -> {
-                        lineChart.getData().clear();
-                        if (stat.getDateTime().getYear() == LocalDate.now().getYear()) {
-                            // Get the date in the required format
-                            String dateLabel = DaysView.getName(stat.getDateTime().getDayOfWeek().name()) +
-                                    "(" + stat.getDateTime() + ")";
+                    if (stat.getDateTime().getYear() == LocalDate.now().getYear()) {
+                        String dateLabel = DaysView.getName(stat.getDateTime().getDayOfWeek().name()) +
+                                "(" + stat.getDateTime() + ")";
 
-                            // Adding data on eggs
-                            eggSeries.getData().add(new XYChart.Data<>(dateLabel, stat.getAmount()));
+                        eggSeries.getData().add(new XYChart.Data<>(dateLabel, stat.getAmount()));
 
-                            // Get the temperature for this date (if available)
-                            WeatherForecast weather = stat.getWeatherForecast();
-                            if(weather !=null) {
-                                tempSeries.getData().add(new XYChart.Data<>(dateLabel, weather.getTemperature()));
-                            }
+                        WeatherForecast weather = stat.getWeatherForecast();
+                        if (weather != null) {
+                            tempSeries.getData().add(new XYChart.Data<>(dateLabel, weather.getTemperature()));
                         }
-                        lineChart.getData().addAll(eggSeries, tempSeries);
-                        populateEggAmountChartNodes(eggSeries, result);
-                        populateWeatherChartNodes(tempSeries, result);
+                    }
                 });
+
+        lineChart.getData().addAll(eggSeries, tempSeries);
+
+        populateEggAmountChartNodes(eggSeries, result);
+        populateWeatherChartNodes(tempSeries, result);
     }
 
     private static void populateEggAmountChartNodes(XYChart.Series<String, Number> series, List<Counter> result) {
